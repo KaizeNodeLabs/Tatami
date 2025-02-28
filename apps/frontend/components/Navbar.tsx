@@ -28,14 +28,12 @@ export default function Navbar() {
       className={`sticky top-0 z-50 w-full transition-colors duration-300 ${navbarBg}`}
     >
       <div className="container flex h-16 items-center">
-        {/* Logo */}
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <img src={logoSrc} alt="Logo" className="h-14 w-auto" />
           </Link>
         </div>
 
-        {/* Navegación */}
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="hidden items-center space-x-6 text-sm font-sm lg:flex">
             <Link
