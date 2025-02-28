@@ -68,6 +68,14 @@ body {
 
     /* Radii */
     --radius: 0.5rem;
+    --sidebar-background: 0 0% 0%; /* #000000 */
+    --sidebar-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-primary: 0 0% 0%; /* #000000 */
+    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-accent: 0 0% 0%; /* #000000 */
+    --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-border: 0 0% 0%; /* #000000 */
+    --sidebar-ring: 0 0% 0%; /* #000000 */
   }
 
   .dark {
