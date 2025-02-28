@@ -10,8 +10,8 @@ body {
   :root {
     /* Brand Colors */
     --yellow: 42 99% 54%; /* #FEB913 */
-    --black: 0 0% 6%;        
-    --white: 0 0% 100%; 
+    --black: 0 0% 6%;
+    --white: 0 0% 100%;
 
     /* Base */
     --background: var(--black);
@@ -37,11 +37,11 @@ body {
     --primary-800: 0 0% 20%;
     --primary-900: 0 0% 6%;
     --primary-950: 0 0% 5%;
-     
+
     /* Semantic colors */
     --muted: 240 4.8% 96.1%;
     --muted-foreground: 240 3.8% 46.1%;
-    
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
@@ -94,17 +94,17 @@ body {
     --primary-800: 0 0% 15%;
     --primary-900: 0 0% 6%;
     --primary-950: 0 0% 5%;
-    
+
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    
+
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
 
     /* Semantic colors dark */
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
@@ -152,8 +152,6 @@ body {
     content: counter(step);
   }
 }
-
-
 
 @layer base {
   * {

@@ -26,9 +26,7 @@
     "url": "https://github.com/KaizeNodeLabs/Tatami/issues"
   },
   "homepage": "https://github.com/KaizeNodeLabs/Tatami#readme",
-  "workspaces": [
-    "apps/*"
-  ],
+  "workspaces": ["apps/*"],
   "packageManager": "npm@10.9.2",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
