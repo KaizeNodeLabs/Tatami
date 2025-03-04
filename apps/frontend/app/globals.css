@@ -148,6 +148,29 @@ body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;  
+    scrollbar-width: none;     
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;          
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(234, 179, 8, 0.3);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(234, 179, 8, 0.6);
+  }
 }
 
 @layer utilities {
