@@ -24,8 +24,7 @@ export default {
     extend: {
       colors: {
         yellow: "hsl(var(--yellow))",
-        red: "hsl(var(--red))",
-        blue: "hsl(var(--blue))",
+        neutral: "hsl(var(--neutral-black))",
         black: "hsl(var(--black))",
         white: "hsl(var(--white))",
         background: "hsl(var(--background))",
@@ -128,7 +127,7 @@ export default {
           },
         ],
         lg: [
-          "1.125rem",
+          "3.125rem",
           {
             lineHeight: "1.75rem",
           },

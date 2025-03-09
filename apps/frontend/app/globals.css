@@ -9,13 +9,14 @@ body {
 @layer base {
   :root {
     /* Brand Colors */
-    --yellow: 42 99% 54%; /* #FEB913 */
-    --black: 0 0% 6%;
-    --white: 0 0% 100%;
+    --yellow: 47 93% 53%;        
+    --black: 0 0% 10%;
+    --neutral-black: 0 0% 0%;      
+    --white: 0 0% 100%; 
 
     /* Base */
     --background: var(--black);
-    --foreground: var(--white);
+    --foreground: var(--black);
 
     /* Surface colors */
     --card: 0 0% 100%;
@@ -25,7 +26,7 @@ body {
 
     /* Brand colors */
     --primary: var(--yellow);
-    --primary-foreground: var(--black);
+    --primary-foreground: var(--white);
     --primary-50: 0 0% 98%;
     --primary-100: 0 0% 90%;
     --primary-200: 0 0% 80%;
@@ -35,13 +36,19 @@ body {
     --primary-600: 0 0% 40%;
     --primary-700: 0 0% 30%;
     --primary-800: 0 0% 20%;
-    --primary-900: 0 0% 6%;
+    --primary-900: 0 0% 10%;
     --primary-950: 0 0% 5%;
+    
+    --secondary: var(--yellow);
+    --secondary-foreground: var(--black);
+    
+    --accent: var(--yellow);
+    --accent-foreground: var(--yellow);
 
     /* Semantic colors */
     --muted: 240 4.8% 96.1%;
     --muted-foreground: 240 3.8% 46.1%;
-
+    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
@@ -68,14 +75,6 @@ body {
 
     /* Radii */
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 0%; /* #000000 */
-    --sidebar-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-primary: 0 0% 0%; /* #000000 */
-    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-accent: 0 0% 0%; /* #000000 */
-    --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-border: 0 0% 0%; /* #000000 */
-    --sidebar-ring: 0 0% 0%; /* #000000 */
   }
 
   .dark {
@@ -100,19 +99,19 @@ body {
     --primary-600: 0 0% 35%;
     --primary-700: 0 0% 25%;
     --primary-800: 0 0% 15%;
-    --primary-900: 0 0% 6%;
+    --primary-900: 0 0% 10%;
     --primary-950: 0 0% 5%;
-
+    
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-
+    
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
 
     /* Semantic colors dark */
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-
+    
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
@@ -148,29 +147,6 @@ body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-
-  .hide-scrollbar {
-    -ms-overflow-style: none;  
-    scrollbar-width: none;     
-  }
-
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;          
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(234, 179, 8, 0.3);
-    border-radius: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(234, 179, 8, 0.6);
-  }
 }
 
 @layer utilities {
@@ -181,14 +157,5 @@ body {
   .step:before {
     @apply absolute w-8 h-8 bg-muted rounded-full font-medium text-center text-base inline-flex items-center justify-center -left-4 text-muted-foreground;
     content: counter(step);
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }

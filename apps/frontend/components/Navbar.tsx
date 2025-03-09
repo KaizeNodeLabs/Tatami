@@ -10,27 +10,21 @@ import {
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import logo from '@/public/Primary Logo_Primary Color.svg';
+import Image from "next/image";
 
 export default function Navbar() {
-  const [isDark, setIsDark] = useState(true);
 
-  const navbarBg = isDark ? "bg-navblack" : "bg-white";
-  const textColor = isDark ? "text-white" : "text-black";
-  const logoSrc = isDark
-    ? "/Primary Logo_Primary Color.svg"
-    : "/Primary Logo_Secondary Color.svg";
-
-  const sheetBg = navbarBg;
+  const logoSrc = "/Primary Logo_Primary Color.svg"
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full transition-colors duration-300 ${navbarBg}`}
+    <nav
+      className="sticky top-0 z-50 w-full transition-colors duration-300 bg-neutral"
     >
       <div className="container flex h-16 items-center">
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <img src={logoSrc} alt="Logo" className="h-14 w-auto" />
+            <Image src={logo} width={50} height={50} alt="Tatami logo"></Image>
           </Link>
         </div>
 
@@ -38,42 +32,30 @@ export default function Navbar() {
           <nav className="hidden items-center space-x-6 text-sm font-sm lg:flex">
             <Link
               href="/docs"
-              className={`transition-colors hover:text-foreground/80 ${textColor}`}
+              className="text-primary-foreground transition-colors hover:text-accent"
             >
               Docs
             </Link>
             <Link
               href="/community"
-              className={`transition-colors hover:text-foreground/80 ${textColor}`}
+              className="text-primary-foreground transition-colors hover:text-accent"
             >
               Community
             </Link>
             <Link
               href="/build"
-              className={`transition-colors hover:text-foreground/80 ${textColor}`}
+              className="text-primary-foreground transition-colors hover:text-accent"
             >
               {"Let's build"}
             </Link>
           </nav>
-
-          <button
-            type="button"
-            onClick={() => setIsDark(!isDark)}
-            className={`p-2 rounded-md bg-transparent ${textColor}`}
-          >
-            <img
-              src="/brightness_6.svg"
-              alt="Toggle Dark Mode"
-              className="h-6 w-6"
-            />
-          </button>
 
           <Sheet>
             <SheetTrigger asChild>
               <Button
                 type="button"
                 variant="ghost"
-                className={`px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden ${textColor}`}
+                className={`px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden`}
               >
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
@@ -81,7 +63,7 @@ export default function Navbar() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className={`w-full h-full border-none p-0 ${sheetBg} transition-colors duration-300`}
+              className={`w-full h-full border-none p-0 transition-colors duration-300`}
             >
               <SheetHeader>
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
@@ -95,26 +77,26 @@ export default function Navbar() {
                     <Button
                       type="button"
                       variant="ghost"
-                      className={`px-0 text-xl hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 ${textColor}`}
+                      className={`px-0 text-xl hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0`}
                     />
                   </SheetTrigger>
                 </div>
                 <nav className="flex flex-col space-y-8 p-6">
                   <Link
                     href="/docs"
-                    className={`text-xl font-medium hover:text-white/80 ${textColor}`}
+                    className={`text-xl font-medium hover:text-white/80`}
                   >
                     Docs
                   </Link>
                   <Link
                     href="/community"
-                    className={`text-xl font-medium hover:text-white/80 ${textColor}`}
+                    className={`text-xl font-medium hover:text-white/80`}
                   >
                     Community
                   </Link>
                   <Link
                     href="/build"
-                    className={`text-xl font-medium hover:text-white/80 ${textColor}`}
+                    className={`text-xl font-medium hover:text-white/80`}
                   >
                     {"Let's build"}
                   </Link>
@@ -124,6 +106,6 @@ export default function Navbar() {
           </Sheet>
         </div>
       </div>
-    </header>
+    </nav>
   );
 }
