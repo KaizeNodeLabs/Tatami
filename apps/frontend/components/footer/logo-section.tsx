@@ -13,7 +13,7 @@ export const LogoSection = () => {
           className="h-20 w-auto"
         />
       </Link>
-      <p className="block text-white text-lg transition-colors">
+      <p className="block text-primary-foreground text-lg transition-colors">
         Conquer the Dojo
       </p>
     </div>

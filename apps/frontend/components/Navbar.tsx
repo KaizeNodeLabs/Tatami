@@ -8,23 +8,47 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu , Moon , Sun } from "lucide-react";
 import Link from "next/link";
 import logo from '@/public/Primary Logo_Primary Color.svg';
+import darkLogo from '@/public/Dark Logo_Dark Color.svg'
 import Image from "next/image";
+import { useEffect, useState } from "react";
+
 
 export default function Navbar() {
 
-  const logoSrc = "/Primary Logo_Primary Color.svg"
+  const lightModeLogo = logo;
+  const darkModeLogo = darkLogo;
+
+
+  const [darkMode, setDarkMode] = useState(false);
+  const [logoSrc,setLogoSrc] = useState(darkModeLogo);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      setLogoSrc(lightModeLogo);
+    } else {
+      document.documentElement.classList.remove('dark');
+      setLogoSrc(darkModeLogo);
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  
 
   return (
     <nav
-      className="sticky top-0 z-50 w-full transition-colors duration-300 bg-neutral"
+      className="sticky top-0 z-50 w-full transition-colors duration-300 bg-background text-foreground"
     >
       <div className="container flex h-16 items-center">
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Image src={logo} width={50} height={50} alt="Tatami logo"></Image>
+            <Image src={logoSrc} width={50} height={50} alt="Tatami logo"></Image>
           </Link>
         </div>
 
@@ -50,6 +74,16 @@ export default function Navbar() {
             </Link>
           </nav>
 
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={toggleDarkMode}
+            className="text-primary-foreground hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+          >
+            {darkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+            <span className="sr-only">Toggle dark mode</span>
+          </Button>
+
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -68,7 +102,7 @@ export default function Navbar() {
               <SheetHeader>
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               </SheetHeader>
-              <div className="flex h-full flex-col bg-neutral">
+              <div className="flex h-full flex-col bg-background text-primary-foreground">
                 <div className="flex items-center justify-between p-6">
                   <Link href="/" className="flex items-center">
                     <img src={logoSrc} alt="Logo" className="h-14 w-auto" />
@@ -109,3 +143,11 @@ export default function Navbar() {
     </nav>
   );
 }
+// function useState(arg0: boolean): [any, any] {
+//   throw new Error("Function not implemented.");
+// }
+
+// function useEffect(arg0: () => void, arg1: any[]) {
+//   throw new Error("Function not implemented.");
+// }
+

@@ -9,10 +9,10 @@ const Productive = () => {
   const [activeVideo, setActiveVideo] = useState(0);
 
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 bg-black">
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-background text-primary-foreground">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center space-y-4 text-center">
-          <h2 className="md:text-md font-bold tracking-tighter sm:text-4xl xl:text-4xl text-white">
+          <h2 className="md:text-md font-bold tracking-tighter sm:text-4xl xl:text-4xl">
             Stay productive and build your own game
           </h2>
           <p className="mx-auto text-secondary-foreground lg:text-lg">
@@ -26,7 +26,7 @@ const Productive = () => {
                 key={video.id}
                 variant="action"
                 className={cn(
-                  "min-w-[120px]",
+                  "min-w-[120px] bg-primary-200 text-primary-foreground hover:bg-primary-200/90",
                   activeVideo === index &&
                     "bg-yellow text-black hover:bg-yellow/90",
                 )}

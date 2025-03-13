@@ -4,6 +4,8 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  color:var(--foreground);
 }
 
 @layer base {
@@ -16,8 +18,8 @@ body {
     --paragraph: 0 0% 76%;
 
     /* Base */
-    --background: var(--black);
-    --foreground: var(--black);
+    --background: var(--white);
+    --foreground: var(--neutral-black);
 
     /* Surface colors */
     --card: 0 0% 100%;
@@ -27,7 +29,7 @@ body {
 
     /* Brand colors */
     --primary: var(--yellow);
-    --primary-foreground: var(--white);
+    --primary-foreground: var(--black);
     --black-foreground: var(--black);
     --primary-50: 0 0% 98%;
     --primary-100: 0 0% 90%;
@@ -91,7 +93,7 @@ body {
 
     /* Brand colors dark */
     --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary-foreground: var(--white);
     --primary-50: 0 0% 95%;
     --primary-100: 0 0% 85%;
     --primary-200: 0 0% 75%;

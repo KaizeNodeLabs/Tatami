@@ -33,7 +33,7 @@ export const NewsletterForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 text-primary-foreground">
       <div className="flex gap-2">
         <Input
           type="email"

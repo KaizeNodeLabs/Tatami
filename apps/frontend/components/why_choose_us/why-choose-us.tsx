@@ -5,7 +5,7 @@ import { MousePointerClick, Lightbulb } from "lucide-react";
 1
 const WhyChooseTatami: React.FC = () => {
   return (
-    <section className="text-white flex flex-col sm:flex-col md:flex-col lg:flex-row items-center justify-center px-6 sm:px-10 md:px-16 lg:px-24 xl:px-32 2xl:px-40 py-16 sm:py-20 md:py-24 lg:py-28 gap-4 sm:gap-6 md:gap-8 lg:gap-10 w-full">
+    <section className="text-primary-foreground bg-background flex flex-col sm:flex-col md:flex-col lg:flex-row items-center justify-center px-6 sm:px-10 md:px-16 lg:px-24 xl:px-32 2xl:px-40 py-16 sm:py-20 md:py-24 lg:py-28 gap-4 sm:gap-6 md:gap-8 lg:gap-10 w-full">
       <div className="w-full sm:w-full md:w-full lg:w-1/2 flex justify-center lg:justify-end">
         <Image
           src={chooseUs}

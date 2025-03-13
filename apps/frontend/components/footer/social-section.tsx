@@ -52,14 +52,14 @@ export const SocialSection = () => {
 
   return (
     <div>
-      <h3 className="text-primary text-xl font-semibold mb-4">Social</h3>
+      <h3 className="text-primary-foreground text-xl font-semibold mb-4">Social</h3>
       <div className="flex space-x-6">
         {socials.map((social) => {
           return (
             <Link
               key={social.id}
               href={social.url}
-              className="text-white hover:text-primary transition-colors"
+              className="text-primary-foreground hover:text-primary transition-colors"
             >
               {social.iconSVG}
             </Link>

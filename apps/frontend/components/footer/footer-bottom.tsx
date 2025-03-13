@@ -6,19 +6,19 @@ export const FooterBottom = () => {
       <div className="flex flex-wrap gap-2 mb-4 md:mb-0">
         <Link
           href="/privacy-policy"
-          className="text-white text-lg hover:text-primary transition-colors"
+          className="text-primary-foreground text-lg hover:text-primary transition-colors"
         >
           Privacy Policy
         </Link>
         <span className="text-white/40">|</span>
         <Link
           href="/terms"
-          className="text-white text-lg hover:text-primary transition-colors"
+          className="text-primary-foreground text-lg hover:text-primary transition-colors"
         >
           Terms of Service
         </Link>
       </div>
-      <div className="text-white text-lg">
+      <div className="text-primary-foreground text-lg">
         <Link href="https://github.com/KaizeNodeLabs">
           2025 <span className="font-semibold">Kaizenode Labs</span>
         </Link>

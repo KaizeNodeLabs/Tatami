@@ -5,13 +5,13 @@ import Image from "next/image";
 
 export default function HeroSection() {
   return (
-    <section className="bg-background text-white py-16 px-4">
+    <section className="bg-background text-foreground py-16 px-4 w-full">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
         <div className="md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left">
-          <h1 className="font-inter font-bold text-2xl md:text-4xl tracking-[0] mb-4">
+          <h1 className="font-inter font-bold text-2xl md:text-4xl tracking-[0] mb-4 ">
             Conquer the Dojo
           </h1>
-          <p className="sm:text-sm md: text-md lg:text-lg mb-6 text-secondary-foreground">
+          <p className="sm:text-sm md: text-md lg:text-lg mb-6 ">
           Leverage the power of Tatami to accelerate on-chain game development and launch your game quickly and efficiently
           </p>
           <div className="flex flex-col md:flex-row gap-4">

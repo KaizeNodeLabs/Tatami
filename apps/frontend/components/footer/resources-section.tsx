@@ -8,14 +8,14 @@ export const ResourcesSection = () => {
 
   return (
     <div>
-      <h3 className="text-primary text-xl font-semibold mb-4">Resources</h3>
+      <h3 className="text-primary-foreground text-xl font-semibold mb-4">Resources</h3>
       <div className="flex flex-col space-y-2">
         {resources.map((resource) => {
           return (
             <Link
               key={resource.id}
               href={resource.url}
-              className="text-white text-lg hover:text-primary transition-colors"
+              className="text-primary-foreground text-lg hover:text-primary transition-colors"
             >
               {resource.label}
             </Link>
