@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 // Mock data
 const modelData = [
@@ -9,10 +9,10 @@ const modelData = [
   { name: "Chrome", value: 12799, color: "#FFCB47" },
   { name: "Safari", value: 1500, color: "#FFD670" },
   { name: "Edge", value: 950, color: "#FFE299" },
-]
+];
 
 // Calculate the total number of models
-const totalModels = modelData.reduce((sum, item) => sum + item.value, 0)
+const totalModels = modelData.reduce((sum, item) => sum + item.value, 0);
 
 export function ModelsChart() {
   return (
@@ -37,12 +37,11 @@ export function ModelsChart() {
                 paddingAngle={0}
                 dataKey="value"
                 label={({ name, value, cx, x, y }) => {
-                  
-                  const isLargeValue = value > 1000
-                  if (!isLargeValue) return null
+                  const isLargeValue = value > 1000;
+                  if (!isLargeValue) return null;
 
                   // Determine the label position
-                  const isRightSide = x > cx
+                  const isRightSide = x > cx;
 
                   return (
                     <g>
@@ -65,9 +64,14 @@ export function ModelsChart() {
                       >
                         {value.toLocaleString()}
                       </text>
-                      <circle cx={isRightSide ? x + 5 : x - 5} cy={y} r={2} fill="#101010" />
+                      <circle
+                        cx={isRightSide ? x + 5 : x - 5}
+                        cy={y}
+                        r={2}
+                        fill="#101010"
+                      />
                     </g>
-                  )
+                  );
                 }}
               >
                 {modelData.map((entry, index) => (
@@ -75,7 +79,10 @@ export function ModelsChart() {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value) => [`${value.toLocaleString()} models`, "Cantidad"]}
+                formatter={(value) => [
+                  `${value.toLocaleString()} models`,
+                  "Quantity",
+                ]}
                 labelFormatter={(label) => ""}
               />
             </PieChart>
@@ -83,6 +90,5 @@ export function ModelsChart() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

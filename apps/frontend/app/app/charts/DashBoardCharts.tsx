@@ -1,5 +1,5 @@
-import { ModelsChart } from "./ModelsChart"
-import { TransactionsChart } from "./TransactionsChart"
+import { ModelsChart } from "./ModelsChart";
+import { TransactionsChart } from "./TransactionsChart";
 
 export function DashboardCharts() {
   return (
@@ -7,6 +7,5 @@ export function DashboardCharts() {
       <ModelsChart />
       <TransactionsChart />
     </div>
-  )
+  );
 }
-
