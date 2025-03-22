@@ -37,7 +37,7 @@ export function ModelsChart() {
                 paddingAngle={0}
                 dataKey="value"
                 label={({ name, value, cx, x, y }) => {
-                  const isLargeValue = value > 1000;
+                  const isLargeValue = value > 700;
                   if (!isLargeValue) return null;
 
                   // Determine the label position
