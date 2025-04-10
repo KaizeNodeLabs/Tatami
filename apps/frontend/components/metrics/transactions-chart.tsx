@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingUp } from "lucide-react";
-import type { CustomTooltipProps } from "../../../types/charts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts"
+import { TrendingUp, TrendingDown } from "lucide-react"
+import type { CustomTooltipProps, TransactionDataPoint } from "../../types/charts"
 
 // Simulated data for the transactions chart
-const transactionData = [
+const transactionData: TransactionDataPoint[] = [
   { date: "2023-01", value: 320 },
   { date: "2023-02", value: 350 },
   { date: "2023-03", value: 410 },
@@ -19,17 +19,9 @@ const transactionData = [
   { date: "2023-10", value: 580 },
   { date: "2023-11", value: 510 },
   { date: "2023-12", value: 635 },
-];
+]
 
-// Calculate the percentage change
-const calculatePercentChange = () => {
-  const currentValue = transactionData[transactionData.length - 1].value;
-  const previousValue = transactionData[transactionData.length - 2].value;
-  const percentChange = ((currentValue - previousValue) / previousValue) * 100;
-  return percentChange.toFixed(2);
-};
-
-// Custom component for the tooltip
+// Custom tooltip
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
@@ -37,15 +29,39 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         <p className="text-xs font-medium">{`${label}`}</p>
         <p className="text-xs text-gray-700">{`${payload[0].value} transactions`}</p>
       </div>
-    );
+    )
   }
 
-  return null;
-};
+  return null
+}
 
-export function TransactionsChart() {
-  const percentChange = calculatePercentChange();
-  const isPositive = Number.parseFloat(percentChange) >= 0;
+interface TransactionsChartProps {
+  data?: TransactionDataPoint[] | null
+}
+
+export function TransactionsChart({ data }: TransactionsChartProps) {
+  const chartData = data ? data : transactionData
+
+  const currentValue = chartData[chartData.length - 1]?.value ?? 0
+  const previousValue = chartData[chartData.length - 2]?.value ?? 0
+
+  let percentChange: number | null = null
+  let percentText = "--"
+  let showIcon = false
+  let isPositive = false
+  let changeColor = "text-muted-foreground"
+
+  if (previousValue !== 0) {
+    percentChange = ((currentValue - previousValue) / previousValue) * 100
+    isPositive = percentChange >= 0
+    percentText = `${isPositive ? "+" : ""}${percentChange.toFixed(2)}%`
+    showIcon = true
+    changeColor = isPositive ? "text-green-500" : "text-red-500"
+  } else if (currentValue === 0) {
+    percentChange = 0
+    percentText = "0%"
+    changeColor = "text-muted-foreground"
+  }
 
   return (
     <Card className="w-full">
@@ -57,35 +73,22 @@ export function TransactionsChart() {
       </CardHeader>
       <CardContent>
         <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-4xl font-bold">
-            {transactionData[transactionData.length - 1].value}
-          </span>
-          <div
-            className={`flex items-center ${
-              isPositive ? "text-green-500" : "text-red-500"
-            }`}
-          >
-            <span className="text-sm font-medium">
-              {isPositive ? "+" : ""}
-              {percentChange}%
-            </span>
-            <TrendingUp className="h-4 w-4 ml-1" />
+          <span className="text-4xl font-bold">{currentValue}</span>
+          <div className={`flex items-center gap-1 text-sm font-medium ${changeColor}`}>
+            <span>{percentText}</span>
+            {showIcon &&
+              (isPositive ? (
+                <TrendingUp className="h-4 w-4" />
+              ) : (
+                <TrendingDown className="h-4 w-4" />
+              ))}
           </div>
         </div>
         <div className="h-[100px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={transactionData}
-              margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-            >
+            <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient
-                  id="colorTransaction"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
+                <linearGradient id="colorTransaction" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#FEB913" stopOpacity={0.1} />
                   <stop offset="95%" stopColor="#FEB913" stopOpacity={0} />
                 </linearGradient>
@@ -112,5 +115,5 @@ export function TransactionsChart() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

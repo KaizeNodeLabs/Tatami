@@ -17,7 +17,7 @@ interface UseGraphQLConnection {
 /**
  * Custom hook to connect to a GraphQL endpoint and track queries/responses
  */
-export function useGraphQLConnection(): UseGraphQLConnection {
+export function useGraphQLConnection(onError?: (msg: string) => void): UseGraphQLConnection {
   const [fetcher, setFetcher] = useState<Fetcher | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState<string | null>(null)
@@ -28,8 +28,19 @@ export function useGraphQLConnection(): UseGraphQLConnection {
   /**
    * Connects to the given GraphQL endpoint and sets up a custom fetcher
    */
-  const connect = (endpoint: string) => {
+  const connect = async (endpoint: string) => {
     try {
+      // Check if the endpoint responds
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: '{ __typename }' }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Invalid GraphQL endpoint')
+      }
+
       const graphiqlFetcher = createGraphiQLFetcher({ url: endpoint })
 
       const customFetcher: Fetcher = async (params: FetcherParams, opts?: FetcherOpts) => {
@@ -72,7 +83,13 @@ export function useGraphQLConnection(): UseGraphQLConnection {
       setFetcher(() => customFetcher)
       setError(null)
     } catch {
-      setError('Failed to connect to the GraphQL endpoint.')
+      const message = 'Failed to connect to the GraphQL endpoint.'
+      setError(message)
+      setFetcher(null)
+
+      if (onError) {
+        onError(message)
+      }
     }
   }
 
