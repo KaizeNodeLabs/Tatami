@@ -12,7 +12,7 @@ export const ResourcesSection = () => {
 
   return (
     <div>
-      <h3 className="text-primary text-xl font-semibold mb-4">{t('resources')}</h3>
+      <h3 className="text-yellow text-xl font-semibold mb-4">{t('resources')}</h3>
       <div className="flex flex-col space-y-2">
         {resources.map((resource) => {
           return (

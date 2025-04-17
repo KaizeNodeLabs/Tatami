@@ -28,7 +28,6 @@ export const NewsletterForm = () => {
     event.preventDefault();
 
     if (validateEmail(email)) {
-      // TODO: Handle subscription to newsletter
       setEmail("");
     }
   };
@@ -52,7 +51,7 @@ export const NewsletterForm = () => {
         />
         <Button
           type="submit"
-          className="bg-primary text-black hover:bg-primary/90 px-6 text-sm px-4 rounded-full"
+          className="bg-yellow text-black px-6 text-sm px-4 rounded-full"
         >
           {t('subscribe')}
         </Button>

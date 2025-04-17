@@ -52,7 +52,7 @@ export const SocialSection = () => {
 
   return (
     <div>
-      <h3 className="text-primary text-xl font-semibold mb-4">Social</h3>
+      <h3 className="text-yellow text-xl font-semibold mb-4">Social</h3>
       <div className="flex space-x-6">
         {socials.map((social) => {
           return (

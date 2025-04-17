@@ -64,7 +64,7 @@ const TeamSection: React.FC = () => {
                 />
                 
                 {/* Logo overlay in top right */}
-                <div className="absolute top-0 overflow-hidden lg:-right-5 right-0 bg-primary p-1 w-8 h-10 lg:w-12 lg:h-14 flex items-center justify-center">
+                <div className="absolute top-0 overflow-hidden lg:-right-5 right-0 bg-yellow p-1 w-8 h-10 lg:w-12 lg:h-14 flex items-center justify-center">
                   <Image
                       src='/Tatami-logo.png'
                       width={50}
@@ -77,16 +77,15 @@ const TeamSection: React.FC = () => {
               {/* Member info */}
               <div className="mt-4">
                 <h3 className="text-primary-foreground font-bold lg:text-xl">{member.name}</h3>
-                <h4 className="text-primary-foreground font-bold lg:text-xl">{member.surname}</h4>
-                <p className="text-primary font-bold border-b-2 border-primary w-[40%] lg:w-[60%] pb-3 mt-2">{member.role}</p>
-                
+                <h4 className="text-primary-yellow font-bold lg:text-xl">{member.surname}</h4>
+                <p className="text-yellow font-bold border-b-2 border-yellow w-[40%] lg:w-[60%] pb-3 mt-2">{member.role}</p>
                 
                 {/* Social icons */}
                 <div className="flex space-x-4 mt-4">
                   {member.socialLinks.github && (
                     <a href={member.socialLinks.github} className="text-primary-foreground hover:text-primary" aria-label="GitHub">
                       <svg
-                        className="w-5 h-5"
+                        className="w8 h-8 hover:text-yellow"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                         aria-hidden="true"
@@ -103,7 +102,7 @@ const TeamSection: React.FC = () => {
                   {member.socialLinks.twitter && (
                     <a href={member.socialLinks.twitter} className="text-primary-foreground hover:text-primary" aria-label="Twitter">
                       <svg
-                        className="w-5 h-5"
+                        className="w-8 h-8 hover:text-yellow"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                         aria-hidden="true"
@@ -116,7 +115,7 @@ const TeamSection: React.FC = () => {
                   {member.socialLinks.telegram && (
                     <a href={member.socialLinks.telegram} className="text-primary-foreground hover:text-primary" aria-label="Telegram">
                       <svg
-                        className="w-5 h-5"
+                        className="w-8 h-8 hover:text-yellow"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                         aria-hidden="true"

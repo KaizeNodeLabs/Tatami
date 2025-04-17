@@ -13,8 +13,6 @@ body {
     --black: 0 0% 10%;
     --neutral-white: 0 0% 100%;
     --neutral-black: 0 0% 0%;
-
-
     --white: 0 0% 90.6%;
     --paragraph: 0 0% 76%;
 
@@ -44,7 +42,7 @@ body {
     --primary-800: 0 0% 20%;
     --primary-900: 0 0% 10%;
     --primary-950: 0 0% 5%;
-
+    
     --secondary: var(--yellow);
     --secondary-foreground: var(--black);
 

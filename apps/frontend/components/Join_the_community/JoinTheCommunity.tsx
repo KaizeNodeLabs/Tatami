@@ -19,13 +19,13 @@ export default function JoinCommunity() {
             Lorem ipsum dolor sit ammet letarsha wut et mortem lortem vitae lid perplexit
           </p>
           <div className="flex justify-center gap-4 mt-8">
-            <Button variant="action" className="bg-yellow text-black hover:bg-yellow/90">
+            <Button variant="default">
               GitHub
               <div className="p-1.5 ml-2 flex items-center justify-center">
                 <Github className="h-3.5 w-3.5 text-third-foreground" />
               </div>
             </Button>
-            <Button variant="action" className="bg-yellow text-black hover:bg-yellow/90">
+            <Button variant="default">
               Telegram
               <div className="p-1.5 ml-2 flex items-center justify-center">
                 <Send className="h-3.5 w-3.5 text-third-foreground" />
