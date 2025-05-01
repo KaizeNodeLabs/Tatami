@@ -24,6 +24,8 @@ export function CodeDiagramSection() {
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
   const { toast } = useToast();
   const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
+  const diagramContainerRef = useRef<HTMLDivElement>(null);
+  const [diagramZoom, setDiagramZoom] = useState(100);
 
   // Handler function for the Monaco editor
   function handleEditorDidMount(editor: import("monaco-editor").editor.IStandaloneCodeEditor): void {
@@ -92,6 +94,19 @@ export function CodeDiagramSection() {
         setLoading(false);
       })
       .catch((err) => console.error("Error loading models:", err));
+  }, []);
+  
+  // Listen for zoom changes from DiagramControls
+  useEffect(() => {
+    const handleZoomChange = (event: CustomEvent) => {
+      setDiagramZoom(event.detail.zoomLevel);
+    };
+    
+    document.addEventListener('diagramZoomChange', handleZoomChange as EventListener);
+    
+    return () => {
+      document.removeEventListener('diagramZoomChange', handleZoomChange as EventListener);
+    };
   }, []);
 
   // Determine which code to display
@@ -238,7 +253,15 @@ export function CodeDiagramSection() {
             </div>
           )
         ) : (
-          <div className="bg-neutral grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 overflow-auto h-full">
+          <div 
+            className="bg-neutral grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 overflow-auto h-full diagram-container"
+            ref={diagramContainerRef}
+            style={{ 
+              transform: `scale(${diagramZoom / 100})`,
+              transformOrigin: 'center',
+              transition: 'transform 0.2s ease-in-out',
+            }}
+          >
             {entities.length === 0 ? (
               <p className="text-gray-500">No models created yet</p>
             ) : (
