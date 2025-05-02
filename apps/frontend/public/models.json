@@ -1,3 +1,82 @@
 {
-  "models": []
+  "models": [
+    {
+      "id": "model_1746114567557",
+      "name": "New Model 1",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746114567557",
+          "name": "ayominkvsn",
+          "dataType": "u32",
+          "isKey": true
+        },
+        {
+          "id": "prop_1746114592118",
+          "name": "nsvknnkvsnkvs",
+          "dataType": "u32",
+          "isKey": true
+        }
+      ],
+      "traits": [
+        "Copy"
+      ]
+    },
+    {
+      "id": "model_1746114618228",
+      "name": "New Model 2",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746114618228",
+          "name": "",
+          "dataType": "u32",
+          "isKey": true
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746185775333",
+      "name": "New Model 3",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746185775333",
+          "name": "m;am;lmvlmkvmkklv",
+          "dataType": "u32",
+          "isKey": true
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746185791503",
+      "name": "New Model 4",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746185791503",
+          "name": "klkcklnsknclka'nlcnkcnacnac",
+          "dataType": "u32",
+          "isKey": true
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746185799977",
+      "name": "New Model 5",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746185799977",
+          "name": "knlkw'nqknalkcniel'wk",
+          "dataType": "u32",
+          "isKey": true
+        }
+      ],
+      "traits": []
+    }
+  ]
 }
