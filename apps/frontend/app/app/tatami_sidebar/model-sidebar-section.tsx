@@ -24,7 +24,7 @@ function ModelSidebarSection({ modelSection }: Props) {
 
       <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4 overflow-x-visible">
         {modelSection.models.map((model) => (
-          <div key={model.id} className="border border-neutral bg-neutral rounded-md overflow-hidden mb-4">
+          <div key={model.id} className="border border-neutral bg-neutral rounded-md mb-4">
             <div className="flex items-center justify-between p-3 bg-neutral text-foreground flex-wrap">
               <div className="flex items-center gap-2 flex-1 flex-wrap">
                 <button type="button" onClick={() => modelSection.toggleModelExpansion(model.id)}>
