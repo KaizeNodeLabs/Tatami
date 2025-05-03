@@ -38,6 +38,7 @@
     "lucide-react": "^0.506.0",
     "react-i18next": "^15.4.1",
     "react-use-draggable": "^0.1.0",
+    "react-xarrows": "^2.0.2",
     "rxjs": "^7.8.2",
     "tailwind-scrollbar": "^4.0.1"
   }
