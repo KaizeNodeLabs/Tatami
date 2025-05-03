@@ -36,6 +36,7 @@
     "@monaco-editor/react": "^4.7.0",
     "i18next": "^24.2.3",
     "react-i18next": "^15.4.1",
+    "react-xarrows": "^2.0.2",
     "rxjs": "^7.8.2",
     "tailwind-scrollbar": "^4.0.1"
   }

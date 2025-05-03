@@ -1,3 +1,84 @@
 {
-  "models": []
+  "models": [
+    {
+      "id": "model_1746271143845",
+      "name": "New Model 1",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746271143845",
+          "name": "Ayomide",
+          "dataType": "u32",
+          "isKey": true
+        },
+        {
+          "id": "prop_1746271155112",
+          "name": "Software Engineer",
+          "dataType": "u32",
+          "isKey": false
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746271167138",
+      "name": "New Model 2",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746271167138",
+          "name": "Emmanuel",
+          "dataType": "u32",
+          "isKey": true
+        },
+        {
+          "id": "prop_1746271187515",
+          "name": "Mern Stack",
+          "dataType": "u32",
+          "isKey": false
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746271198655",
+      "name": "New Model 3",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746271198655",
+          "name": "Gideon Bature",
+          "dataType": "u32",
+          "isKey": true
+        },
+        {
+          "id": "prop_1746271213893",
+          "name": "Blockchain  developer",
+          "dataType": "u32",
+          "isKey": false
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746271300569",
+      "name": "New Model 4",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746271300569",
+          "name": "Onlydust",
+          "dataType": "u32",
+          "isKey": true
+        },
+        {
+          "id": "prop_1746271329425",
+          "name": "wow",
+          "dataType": "u32",
+          "isKey": false
+        }
+      ],
+      "traits": []
+    }
+  ]
 }

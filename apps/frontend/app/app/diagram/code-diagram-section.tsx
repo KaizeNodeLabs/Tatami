@@ -1,9 +1,12 @@
+// code-diagram-section.tsx
+
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
 
 import { EntityCard, type EntityField } from "@/app/app/diagram/EntityCard";
+import { DraggableDiagram } from "@/app/app/diagram/DraggableDiagram";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { generateCairoCode } from "@/utils/generateCairoCode";
@@ -20,17 +23,22 @@ export function CodeDiagramSection() {
   const [entities, setEntities] = useState<
     { title: string; fields: EntityField[] }[]
   >([]);
+  const [relationships, setRelationships] = useState<
+    { from: string; to: string; fieldName?: string }[]
+  >([]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
   const { toast } = useToast();
-  const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<
+    import("monaco-editor").editor.IStandaloneCodeEditor | null
+  >(null);
 
-  // Handler function for the Monaco editor
-  function handleEditorDidMount(editor: import("monaco-editor").editor.IStandaloneCodeEditor): void {
+  function handleEditorDidMount(
+    editor: import("monaco-editor").editor.IStandaloneCodeEditor
+  ): void {
     editorRef.current = editor;
   }
 
-  // Handle code changes in the editor
   function handleEditorChange(value: string | undefined): void {
     if (isEditing && value !== undefined) {
       setEditedCode(value);
@@ -38,7 +46,6 @@ export function CodeDiagramSection() {
     }
   }
 
-  // Toggle editing mode
   const toggleEditMode = () => {
     if (isEditing && hasCustomEdits) {
       toast({
@@ -59,19 +66,23 @@ export function CodeDiagramSection() {
       style: { color: "white" },
     });
   };
-  
-  // Subscribe to model changes
+
   useEffect(() => {
-    const subscription = modelStateService.models$.subscribe(models => {
+    const subscription = modelStateService.models$.subscribe((models) => {
       const generatedCode = generateCairoCode(models);
 
-      // Only update code if we haven't made custom edits
       if (!hasCustomEdits) {
         setCode(generatedCode);
         setEditedCode(generatedCode);
       }
 
       setEntities(generateEntities(models));
+
+      if (models.length > 0) {
+        const newRelationships = extractRelationships(models);
+        setRelationships(newRelationships);
+      }
+
       setLoading(false);
     });
 
@@ -87,12 +98,64 @@ export function CodeDiagramSection() {
       .then((data) => {
         const generatedCode = generateCairoCode(data.models || []);
         setCode(generatedCode);
-        setEditedCode(generatedCode); // Initialize editedCode with the same value
+        setEditedCode(generatedCode); 
         setEntities(generateEntities(data.models || []));
+
+        if (data.models && data.models.length > 0) {
+          const newRelationships = extractRelationships(data.models);
+          setRelationships(newRelationships);
+        }
+
         setLoading(false);
       })
       .catch((err) => console.error("Error loading models:", err));
   }, []);
+
+  const extractRelationships = (models: any[]) => {
+    const relationshipsList: {
+      from: string;
+      to: string;
+      fieldName?: string;
+    }[] = [];
+
+    models.forEach((model) => {
+      if (model.fields) {
+        model.fields.forEach((field: any) => {
+          if (field.isReference && field.referenceModel) {
+            relationshipsList.push({
+              from: model.name,
+              to: field.referenceModel,
+              fieldName: field.name,
+            });
+          }
+        });
+      }
+    });
+
+    if (models.length > 0 && relationshipsList.length === 0) {
+      const modelNames = models.map((m) => m.name);
+      if (modelNames.length >= 2) {
+        relationshipsList.push({
+          from: modelNames[0],
+          to: modelNames[1],
+        });
+      }
+      if (modelNames.length >= 3) {
+        relationshipsList.push({
+          from: modelNames[0],
+          to: modelNames[2],
+        });
+      }
+      if (modelNames.length >= 4) {
+        relationshipsList.push({
+          from: modelNames[1],
+          to: modelNames[3],
+        });
+      }
+    }
+
+    return relationshipsList;
+  };
 
   // Determine which code to display
   const displayCode = hasCustomEdits ? editedCode : code;
@@ -122,11 +185,30 @@ export function CodeDiagramSection() {
     setHasCustomEdits(false);
     toast({
       title: "Code reset",
-      description: "Your changes have been discarded and the generated code restored",
+      description:
+        "Your changes have been discarded and the generated code restored",
       duration: 2000,
       style: { color: "white" },
     });
   };
+
+  const diagramEntities = entities.map((entity) => ({
+    id: entity.title,
+    title: entity.title,
+    fields: entity.fields
+  }));
+  
+  const clonedEntities = [...diagramEntities];
+  if (diagramEntities.length > 0) {
+    for (let i = 1; i <= 3; i++) {
+      if (diagramEntities[0]) {
+        clonedEntities.push({
+          ...diagramEntities[0],
+          id: `${diagramEntities[0].id}_clone_${i}`
+        });
+      }
+    }
+  }
 
   return (
     <section className="bg-neutral text-foreground rounded-xl shadow-md flex flex-col">
@@ -155,7 +237,7 @@ export function CodeDiagramSection() {
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              <div className="flex justify-between p-2 border-b  mx-1">
+              <div className="flex justify-between p-2 border-b mx-1">
                 {hasCustomEdits && (
                   <button
                     onClick={resetToGenerated}
@@ -172,10 +254,11 @@ export function CodeDiagramSection() {
                   )}
                   <button
                     onClick={toggleEditMode}
-                    className={`text-xs px-3 py-1 rounded ${isEditing
-                      ? "bg-green-500 text-white"
-                      : "bg-blue-500 text-white"
-                      }`}
+                    className={`text-xs px-3 py-1 rounded ${
+                      isEditing
+                        ? "bg-green-500 text-white"
+                        : "bg-blue-500 text-white"
+                    }`}
                   >
                     {isEditing ? "Save" : "Edit Code"}
                   </button>
@@ -198,39 +281,34 @@ export function CodeDiagramSection() {
                   scrollbar: {
                     verticalScrollbarSize: 8,
                     horizontalScrollbarSize: 8,
-                    alwaysConsumeMouseWheel: false
-
+                    alwaysConsumeMouseWheel: false,
                   },
                   minimap: {
                     enabled: true,
                     maxColumn: 80,
                     renderCharacters: false,
-                    showSlider: "always"
+                    showSlider: "always",
                   },
                   lineNumbers: "on",
                   lineNumbersMinChars: 3,
-
                   renderWhitespace: "boundary",
                   renderLineHighlight: "all",
                   guides: {
                     indentation: true,
-                    highlightActiveIndentation: true
+                    highlightActiveIndentation: true,
                   },
                   cursorBlinking: "smooth",
                   cursorStyle: "line-thin",
-
                   find: {
                     addExtraSpaceOnTop: false,
                     autoFindInSelection: "never",
-                    seedSearchStringFromSelection: "always"
+                    seedSearchStringFromSelection: "always",
                   },
-
-                  // Accesibilidad
                   mouseWheelZoom: true,
                   smoothScrolling: true,
                   padding: {
                     top: 12,
-                    bottom: 12
+                    bottom: 12,
                   },
                 }}
                 theme="hc-black"
@@ -238,15 +316,10 @@ export function CodeDiagramSection() {
             </div>
           )
         ) : (
-          <div className="bg-neutral grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 overflow-auto h-full">
-            {entities.length === 0 ? (
-              <p className="text-gray-500">No models created yet</p>
-            ) : (
-              entities.map(({ title, fields }) => (
-                <EntityCard key={title} title={title} fields={fields} />
-              ))
-            )}
-          </div>
+          <DraggableDiagram
+            entities={diagramEntities}
+            relationships={relationships}
+          />
         )}
       </div>
 
