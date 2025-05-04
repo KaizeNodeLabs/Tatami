@@ -13,4 +13,5 @@ export interface UseModelSectionReturn {
   addProperty: (modelId: string) => void;
   editingModels: { [key: string]: string };
   setEditingModels: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
+  updateModelTraits: (modelId: string, trait: string, isSelected: boolean) => void;
 }

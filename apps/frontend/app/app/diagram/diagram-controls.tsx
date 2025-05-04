@@ -8,14 +8,17 @@ export function DiagramControls() {
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
+  // Zoom in functionality (increase by 15%)
   const handleZoomIn = () => {
     setZoomLevel(prevZoom => Math.min(prevZoom + 15, 200));
   };
   
+  // Zoom out functionality (decrease by 15%)
   const handleZoomOut = () => {
     setZoomLevel(prevZoom => Math.max(prevZoom - 15, 25));
   };
   
+  // Toggle fullscreen mode
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       // Enter fullscreen
@@ -46,7 +49,9 @@ export function DiagramControls() {
     };
   }, []);
   
+  // Create a context value for the zoom level
   useEffect(() => {
+    // Use a custom event to communicate zoom changes
     const zoomEvent = new CustomEvent('diagramZoomChange', {
       detail: { zoomLevel }
     });

@@ -10,7 +10,9 @@ export interface Model {
   name: string;
   expanded: boolean;
   properties: Property[];
+  traits: string[];
 }
+
 
 export interface PropertyItemProps {
   id: string;

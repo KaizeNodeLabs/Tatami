@@ -1,3 +1,38 @@
 {
-  "models": []
+  "models": [
+    {
+      "id": "model_1746200845008",
+      "name": "beast",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746200845008",
+          "name": "beast_id",
+          "dataType": "u32",
+          "isKey": false
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746200847083",
+      "name": "New Model 2",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746200847083",
+          "name": "beast_id",
+          "dataType": "u32",
+          "isKey": false
+        },
+        {
+          "id": "prop_1746200909864",
+          "name": "battle_id",
+          "dataType": "u32",
+          "isKey": true
+        }
+      ],
+      "traits": []
+    }
+  ]
 }

@@ -11,9 +11,8 @@ class ModelStateService {
   // Initialize the service by loading models
   async initialize() {
     try {
-      const response = await fetch("/api/models");
-      const data = await response.json();
-      this.setModels(data.models || []);
+      // Start with empty models array to ensure a clean state
+      this.setModels([]);
     } catch (error) {
       console.error("Error initializing ModelStateService:", error);
     }
@@ -60,5 +59,5 @@ class ModelStateService {
   }
 }
 
-// Singleton instance of the service for the app
+// Export as singleton
 export const modelStateService = new ModelStateService();
