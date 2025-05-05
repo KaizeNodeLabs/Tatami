@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useRef, useEffect } from 'react'; 
 import { ChevronDown, Check } from 'lucide-react';
+import { TypeInfoTooltip } from '@/components/ui/type-info-tooltip';
 
 interface TraitsDropdownProps {
   modelId: string;
@@ -82,14 +83,15 @@ const TraitsDropdown: React.FC<TraitsDropdownProps> = ({ modelId, onTraitToggle,
             {availableTraits.map((trait) => (
               <div 
                 key={trait.id}
-                className="flex items-center justify-between px-4 py-1.5 hover:bg-neutral-100 cursor-pointer"
+                className="flex items-center px-4 py-1.5 hover:bg-neutral-100 cursor-pointer"
                 onClick={() => toggleTrait(trait.id)}
               >
-                <div className="flex items-center">
-                  <span className="text-sm">{trait.name}</span>
-                </div>
-                <div className="w-4 h-4 flex items-center justify-center border border-neutral rounded bg-foreground text-background">
-                  {selectedTraits.includes(trait.name) && <Check className="h-3 w-3" />}
+                <span className="text-sm flex-grow">{trait.name}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 flex items-center justify-center border border-neutral rounded bg-foreground text-background">
+                    {selectedTraits.includes(trait.name) && <Check className="h-3 w-3" />}
+                  </div>
+                  <TypeInfoTooltip value={trait.name} className="h-4 w-4" />
                 </div>
               </div>
             ))}

@@ -12,10 +12,11 @@ export interface EntityCardProps {
   title: string;
   fields: EntityField[];
   className?: string;
+  modelId?: string;
 }
 
 export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
-  ({ title, fields, className, ...props }, ref) => {
+  ({ title, fields, className, modelId, ...props }, ref) => {
     const getFieldIcon = (type: string, name: string, isPrimary: boolean) => {
       switch (true) {
         // Don't show type icon for ID fields
@@ -62,9 +63,10 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
       <div
         ref={ref}
         className={cn(
-          "w-fit overflow-hidden border border-black/30 rounded-md",
+          "w-fit overflow-hidden border border-black/30 rounded-md z-10",
           className,
         )}
+        data-model-id={modelId}
         {...props}
       >
         {/* Header */}

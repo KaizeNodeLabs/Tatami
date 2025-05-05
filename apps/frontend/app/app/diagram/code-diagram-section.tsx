@@ -11,6 +11,8 @@ import { ActionButtons } from "./action-buttons";
 import { DiagramControls } from "./diagram-controls";
 import { modelStateService } from "@/services/ModelStateService";
 import { Loader } from "@/components/ui/loader";
+import { ModelRelationships } from "./ModelRelationships";
+import { ModelRelationship, detectModelRelationships } from "@/utils/detectModelRelationships";
 
 export function CodeDiagramSection() {
   const [activeSection, setActiveSection] = useState("code");
@@ -19,14 +21,18 @@ export function CodeDiagramSection() {
   const [code, setCode] = useState("");
   const [editedCode, setEditedCode] = useState("");
   const [entities, setEntities] = useState<
-    { title: string; fields: EntityField[] }[]
+    { title: string; fields: EntityField[]; modelId: string }[]
   >([]);
+  const [modelRelationships, setModelRelationships] = useState<ModelRelationship[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
+  const [showRelationships, setShowRelationships] = useState(true);
   const { toast } = useToast();
   const editorRef = useRef<
     import("monaco-editor").editor.IStandaloneCodeEditor | null
   >(null);
+  const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
+  const diagramContainerRef = useRef<HTMLDivElement>(null);
 
   function handleEditorDidMount(
     editor: import("monaco-editor").editor.IStandaloneCodeEditor
@@ -72,6 +78,11 @@ export function CodeDiagramSection() {
       }
       setEntities(generateEntities(models));
       setIsFetching(false);
+      // Detect and set model relationships
+      const relationships = detectModelRelationships(models);
+      setModelRelationships(relationships);
+      
+      setLoading(false);
     });
 
     modelStateService.initialize();
@@ -92,6 +103,10 @@ export function CodeDiagramSection() {
       })
       .catch((err) => console.error("Error loading models:", err));
   }, []);
+  // Handle relationship visibility toggle
+  const handleToggleRelationships = (visible: boolean) => {
+    setShowRelationships(visible);
+  };
 
   const displayCode = hasCustomEdits ? editedCode : code;
 
@@ -209,5 +224,37 @@ export function CodeDiagramSection() {
         {activeSection === "diagram" && <DiagramControls />}
       </section>
     </>
+          )
+        ) : (
+          <div 
+            ref={diagramContainerRef}
+            className="bg-neutral p-10 overflow-auto h-full relative"
+          >
+            {/* Grid for model cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {entities.length === 0 ? (
+                <p className="text-gray-500">No models created yet</p>
+              ) : (
+                entities.map(({ title, fields, modelId }) => (
+                  <EntityCard 
+                    key={modelId} 
+                    title={title} 
+                    fields={fields} 
+                    modelId={modelId} 
+                  />
+                ))
+              )}
+            </div>
+            
+            {/* Relationship lines */}
+            {activeSection === "diagram" && entities.length > 0 && showRelationships && (
+              <ModelRelationships relationships={modelRelationships} />
+            )}
+          </div>
+        )}
+      </div>
+
+      {activeSection === "diagram" && <DiagramControls onToggleRelationships={handleToggleRelationships} />}
+    </section>
   );
 }
