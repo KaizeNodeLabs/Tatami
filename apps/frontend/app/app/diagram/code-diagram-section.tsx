@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, RefObject } from "react";
 import Editor from "@monaco-editor/react";
 
 import { EntityCard, type EntityField } from "@/app/app/diagram/EntityCard";
@@ -11,28 +11,33 @@ import { generateEntities } from "@/utils/generateEntities";
 import { ActionButtons } from "./action-buttons";
 import { DiagramControls } from "./diagram-controls";
 import { modelStateService } from "@/services/ModelStateService";
+import { detectModelRelationships, ModelRelationship } from "@/utils/detectModelRelationships";
+import { ModelRelationships } from "./ModelRelationships";
 
 export function CodeDiagramSection() {
   const [activeSection, setActiveSection] = useState("code");
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState("");
   const [editedCode, setEditedCode] = useState("");
-  const [entities, setEntities] = useState<
-    { title: string; fields: EntityField[] }[]
-  >([]);
+  const [entities, setEntities] = useState<{ title: string; fields: EntityField[] }[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
   const { toast } = useToast();
   const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
-  const diagramContainerRef = useRef<HTMLDivElement>(null);
+  const diagramSectionRef = useRef<HTMLElement | null>(null);
+  const diagramContainerRef = useRef<HTMLDivElement | null>(null);
+  const [modelRelationships, setModelRelationships] = useState<ModelRelationship[]>([]);
   const [diagramZoom, setDiagramZoom] = useState(100);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const scrollStart = useRef<{ left: number; top: number }>({ left: 0, top: 0 });
 
-  // Handler function for the Monaco editor
+  // Handle Monaco mount
   function handleEditorDidMount(editor: import("monaco-editor").editor.IStandaloneCodeEditor): void {
     editorRef.current = editor;
   }
 
-  // Handle code changes in the editor
+  // Handle editor change
   function handleEditorChange(value: string | undefined): void {
     if (isEditing && value !== undefined) {
       setEditedCode(value);
@@ -40,34 +45,60 @@ export function CodeDiagramSection() {
     }
   }
 
-  // Toggle editing mode
+  // Toggle code edit mode
   const toggleEditMode = () => {
     if (isEditing && hasCustomEdits) {
-      toast({
-        title: "Changes saved",
-        description: "Your code changes have been saved",
-        duration: 2000,
-        style: { color: "white" },
-      });
+      toast({ title: "Changes saved", description: "Your code changes have been saved", duration: 2000, style: { color: "white" } });
     }
 
     setIsEditing(!isEditing);
     toast({
       title: isEditing ? "Edit mode disabled" : "Edit mode enabled",
-      description: isEditing
-        ? "The editor is now in read-only mode"
-        : "You can now edit the code directly",
+      description: isEditing ? "The editor is now in read-only mode" : "You can now edit the code directly",
       duration: 2000,
       style: { color: "white" },
     });
   };
-  
-  // Subscribe to model changes
+
+  // Fullscreen toggle
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement && diagramSectionRef.current) {
+      diagramSectionRef.current.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  };
+
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!diagramContainerRef.current) return;
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    scrollStart.current = {
+      left: diagramContainerRef.current.scrollLeft,
+      top: diagramContainerRef.current.scrollTop,
+    };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!diagramContainerRef.current || !isDragging) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    diagramContainerRef.current.scrollLeft = scrollStart.current.left - dx;
+    diagramContainerRef.current.scrollTop = scrollStart.current.top - dy;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Subscribe to model stream
   useEffect(() => {
     const subscription = modelStateService.models$.subscribe(models => {
       const generatedCode = generateCairoCode(models);
 
-      // Only update code if we haven't made custom edits
       if (!hasCustomEdits) {
         setCode(generatedCode);
         setEditedCode(generatedCode);
@@ -82,44 +113,44 @@ export function CodeDiagramSection() {
     return () => subscription.unsubscribe();
   }, [hasCustomEdits]);
 
+  // Load initial models
   useEffect(() => {
     setLoading(true);
     fetch("/api/models")
-      .then((res) => res.json())
-      .then((data) => {
+      .then(res => res.json())
+      .then(data => {
         const generatedCode = generateCairoCode(data.models || []);
         setCode(generatedCode);
-        setEditedCode(generatedCode); // Initialize editedCode with the same value
-        setEntities(generateEntities(data.models || []));
+        setEditedCode(generatedCode);
+
+        const entities = generateEntities(data.models || []);
+        setEntities(entities);
+
+        const relationships = detectModelRelationships(data.models || []);
+        setModelRelationships(relationships);
+
         setLoading(false);
       })
-      .catch((err) => console.error("Error loading models:", err));
+      .catch(err => console.error("Error loading models:", err));
   }, []);
-  
-  // Listen for zoom changes from DiagramControls
+
+  // Listen for zoom change
   useEffect(() => {
     const handleZoomChange = (event: CustomEvent) => {
       setDiagramZoom(event.detail.zoomLevel);
     };
-    
-    document.addEventListener('diagramZoomChange', handleZoomChange as EventListener);
-    
+
+    document.addEventListener("diagramZoomChange", handleZoomChange as EventListener);
     return () => {
-      document.removeEventListener('diagramZoomChange', handleZoomChange as EventListener);
+      document.removeEventListener("diagramZoomChange", handleZoomChange as EventListener);
     };
   }, []);
 
-  // Determine which code to display
   const displayCode = hasCustomEdits ? editedCode : code;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(displayCode);
-    toast({
-      title: "Code copied",
-      description: "The code has been copied to your clipboard",
-      duration: 2000,
-      style: { color: "white" },
-    });
+    toast({ title: "Code copied", description: "The code has been copied to your clipboard", duration: 2000, style: { color: "white" } });
   };
 
   const downloadCode = () => {
@@ -144,7 +175,7 @@ export function CodeDiagramSection() {
   };
 
   return (
-    <section className="bg-neutral text-foreground rounded-xl shadow-md flex flex-col">
+    <section ref={diagramSectionRef} className="bg-neutral text-foreground rounded-xl shadow-md flex flex-col">
       <ActionButtons
         activeSection={activeSection}
         onToggleSection={() =>
@@ -158,39 +189,25 @@ export function CodeDiagramSection() {
         {activeSection === "code" ? (
           loading ? (
             <div className="space-y-2 p-4">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-4/5" />
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-1/2" />
+              {Array.from({ length: 10 }).map((_, idx) => (
+                <Skeleton key={idx} className="h-4 w-full" />
+              ))}
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              <div className="flex justify-between p-2 border-b  mx-1">
+              <div className="flex justify-between p-2 border-b mx-1">
                 {hasCustomEdits && (
-                  <button
-                    onClick={resetToGenerated}
-                    className="text-xs px-3 py-1 rounded bg-red-500 text-white"
-                  >
+                  <button onClick={resetToGenerated} className="text-xs px-3 py-1 rounded bg-red-500 text-white">
                     Reset to Generated
                   </button>
                 )}
                 <div className="flex items-center ml-auto">
                   {hasCustomEdits && (
-                    <span className="text-xs text-amber-600 mr-2">
-                      ⚠️ Custom code
-                    </span>
+                    <span className="text-xs text-amber-600 mr-2">⚠️ Custom code</span>
                   )}
                   <button
                     onClick={toggleEditMode}
-                    className={`text-xs px-3 py-1 rounded ${isEditing
-                      ? "bg-green-500 text-white"
-                      : "bg-blue-500 text-white"
-                      }`}
+                    className={`text-xs px-3 py-1 rounded ${isEditing ? "bg-green-500" : "bg-blue-500"} text-white`}
                   >
                     {isEditing ? "Save" : "Edit Code"}
                   </button>
@@ -214,7 +231,6 @@ export function CodeDiagramSection() {
                     verticalScrollbarSize: 8,
                     horizontalScrollbarSize: 8,
                     alwaysConsumeMouseWheel: false
-
                   },
                   minimap: {
                     enabled: true,
@@ -224,7 +240,6 @@ export function CodeDiagramSection() {
                   },
                   lineNumbers: "on",
                   lineNumbersMinChars: 3,
-
                   renderWhitespace: "boundary",
                   renderLineHighlight: "all",
                   guides: {
@@ -233,14 +248,11 @@ export function CodeDiagramSection() {
                   },
                   cursorBlinking: "smooth",
                   cursorStyle: "line-thin",
-
                   find: {
                     addExtraSpaceOnTop: false,
                     autoFindInSelection: "never",
                     seedSearchStringFromSelection: "always"
                   },
-
-                  // Accesibilidad
                   mouseWheelZoom: true,
                   smoothScrolling: true,
                   padding: {
@@ -253,27 +265,47 @@ export function CodeDiagramSection() {
             </div>
           )
         ) : (
-          <div 
-            className="bg-neutral grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 overflow-auto h-full diagram-container"
+          <div
             ref={diagramContainerRef}
-            style={{ 
-              transform: `scale(${diagramZoom / 100})`,
-              transformOrigin: 'center',
-              transition: 'transform 0.2s ease-in-out',
+            className="relative h-[70vh] overflow-auto bg-neutral"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            style={{
+              cursor: isDragging ? "grabbing" : "grab",
+              userSelect: isDragging ? "none" : "auto"
             }}
           >
-            {entities.length === 0 ? (
-              <p className="text-gray-500">No models created yet</p>
-            ) : (
-              entities.map(({ title, fields }) => (
-                <EntityCard key={title} title={title} fields={fields} />
-              ))
-            )}
+            <div
+              style={{
+                transform: `scale(${diagramZoom / 100})`,
+                transformOrigin: "top left",
+                width: "max-content",
+                height: "max-content",
+                padding: "2rem"
+              }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-max">
+                {entities.length === 0 ? (
+                  <p className="text-gray-500">No models created yet</p>
+                ) : (
+                  entities.map(({ title, fields }) => (
+                    <EntityCard key={title} title={title} fields={fields} />
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
+      {activeSection === "diagram" &&
+        <>
+          <ModelRelationships relationships={modelRelationships} />
+          <DiagramControls diagramSectionRef={diagramSectionRef} diagramZoom={diagramZoom} />
+        </>
+      }
 
-      {activeSection === "diagram" && <DiagramControls />}
     </section>
   );
 }
