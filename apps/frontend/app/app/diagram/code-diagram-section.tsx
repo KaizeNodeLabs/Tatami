@@ -12,9 +12,13 @@ import { DiagramControls } from "./diagram-controls";
 import { modelStateService } from "@/services/ModelStateService";
 import { Loader } from "@/components/ui/loader";
 import { ModelRelationships } from "./ModelRelationships";
-import { ModelRelationship, detectModelRelationships } from "@/utils/detectModelRelationships";
+import {
+  type ModelRelationship,
+  detectModelRelationships,
+} from "@/utils/detectModelRelationships";
 
 export function CodeDiagramSection() {
+  const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState("code");
   const [isFetching, setIsFetching] = useState(true);
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -23,7 +27,9 @@ export function CodeDiagramSection() {
   const [entities, setEntities] = useState<
     { title: string; fields: EntityField[]; modelId: string }[]
   >([]);
-  const [modelRelationships, setModelRelationships] = useState<ModelRelationship[]>([]);
+  const [modelRelationships, setModelRelationships] = useState<
+    ModelRelationship[]
+  >([]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
   const [showRelationships, setShowRelationships] = useState(true);
@@ -31,7 +37,6 @@ export function CodeDiagramSection() {
   const editorRef = useRef<
     import("monaco-editor").editor.IStandaloneCodeEditor | null
   >(null);
-  const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
   const diagramContainerRef = useRef<HTMLDivElement>(null);
 
   function handleEditorDidMount(
@@ -81,7 +86,7 @@ export function CodeDiagramSection() {
       // Detect and set model relationships
       const relationships = detectModelRelationships(models);
       setModelRelationships(relationships);
-      
+
       setLoading(false);
     });
 
@@ -103,6 +108,7 @@ export function CodeDiagramSection() {
       })
       .catch((err) => console.error("Error loading models:", err));
   }, []);
+
   // Handle relationship visibility toggle
   const handleToggleRelationships = (visible: boolean) => {
     setShowRelationships(visible);
@@ -209,52 +215,36 @@ export function CodeDiagramSection() {
               />
             </div>
           ) : (
-            <div className="bg-neutral grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 overflow-auto h-full">
-              {entities.length === 0 ? (
-                <p className="text-gray-500">No models created yet</p>
-              ) : (
-                entities.map(({ title, fields }) => (
-                  <EntityCard key={title} title={title} fields={fields} />
-                ))
+            <div
+              ref={diagramContainerRef}
+              className="bg-neutral p-10 overflow-auto h-full relative"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {entities.length === 0 ? (
+                  <p className="text-gray-500">No models created yet</p>
+                ) : (
+                  entities.map(({ title, fields, modelId }) => (
+                    <EntityCard
+                      key={modelId}
+                      title={title}
+                      fields={fields}
+                      modelId={modelId}
+                    />
+                  ))
+                )}
+              </div>
+
+              {showRelationships && (
+                <ModelRelationships relationships={modelRelationships} />
               )}
             </div>
           )}
         </div>
 
-        {activeSection === "diagram" && <DiagramControls />}
+        {activeSection === "diagram" && (
+          <DiagramControls onToggleRelationships={handleToggleRelationships} />
+        )}
       </section>
     </>
-          )
-        ) : (
-          <div 
-            ref={diagramContainerRef}
-            className="bg-neutral p-10 overflow-auto h-full relative"
-          >
-            {/* Grid for model cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {entities.length === 0 ? (
-                <p className="text-gray-500">No models created yet</p>
-              ) : (
-                entities.map(({ title, fields, modelId }) => (
-                  <EntityCard 
-                    key={modelId} 
-                    title={title} 
-                    fields={fields} 
-                    modelId={modelId} 
-                  />
-                ))
-              )}
-            </div>
-            
-            {/* Relationship lines */}
-            {activeSection === "diagram" && entities.length > 0 && showRelationships && (
-              <ModelRelationships relationships={modelRelationships} />
-            )}
-          </div>
-        )}
-      </div>
-
-      {activeSection === "diagram" && <DiagramControls onToggleRelationships={handleToggleRelationships} />}
-    </section>
   );
 }
