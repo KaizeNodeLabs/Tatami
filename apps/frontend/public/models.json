@@ -79,6 +79,26 @@
         }
       ],
       "traits": []
+    },
+    {
+      "id": "model_1746450451449",
+      "name": "New Model 5",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746450451449",
+          "name": "Hardthings",
+          "dataType": "u32",
+          "isKey": true
+        },
+        {
+          "id": "prop_1746450475818",
+          "name": "Knights",
+          "dataType": "u32",
+          "isKey": false
+        }
+      ],
+      "traits": []
     }
   ]
 }
