@@ -2,68 +2,66 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Expand, Minus, Plus } from "lucide-react";
+import { Expand, Minus, Plus, GitBranch } from "lucide-react";
+// import { useState } from "react";
 
-export function DiagramControls() {
-  const [zoom, setZoom] = useState(100);
-  
-  const handleZoomIn = () => {
-    const newZoom = Math.min(zoom + 25, 200);
-    setZoom(newZoom);
-    updateDiagramZoom(newZoom);
-  };
-  
-  const handleZoomOut = () => {
-    const newZoom = Math.max(zoom - 25, 25);
-    setZoom(newZoom);
-    updateDiagramZoom(newZoom);
-  };
-  
-  const handleReset = () => {
-    setZoom(100);
-    updateDiagramZoom(100);
-  };
-  
-  const updateDiagramZoom = (newZoom: number) => {
-    const zoomEvent = new CustomEvent('diagramZoomChange', {
-      detail: { zoom: newZoom }
-    });
-    window.dispatchEvent(zoomEvent);
-    
-    const diagramElement = document.querySelector('.DraggableDiagram');
-    if (diagramElement) {
-      (diagramElement as HTMLElement).style.transform = `scale(${newZoom / 100})`;
-      (diagramElement as HTMLElement).style.transformOrigin = 'top left';
+interface DiagramControlsProps {
+  onToggleRelationships?: (visible: boolean) => void;
+}
+
+export function DiagramControls({ onToggleRelationships }: DiagramControlsProps) {
+  const [relationshipsVisible, setRelationshipsVisible] = useState(true);
+
+  const toggleRelationships = () => {
+    const newState = !relationshipsVisible;
+    setRelationshipsVisible(newState);
+    if (onToggleRelationships) {
+      onToggleRelationships(newState);
     }
+    
+    // Toggle class on relationship lines for visibility
+    document.querySelectorAll('.relationship-line').forEach(line => {
+      if (newState) {
+        line.classList.remove('opacity-0');
+      } else {
+        line.classList.add('opacity-0');
+      }
+    });
   };
 
   return (
-    <div className="flex justify-end items-center p-2 border-t border-neutral-800">
+    <div className="flex justify-between items-center p-2 border-t">
       <Button
         size="icon"
-        variant="ghost"
-        onClick={handleZoomIn}
-        className="text-white"
+        variant={relationshipsVisible ? "default" : "outline"}
+        onClick={toggleRelationships}
+        title={relationshipsVisible ? "Hide Relationships" : "Show Relationships"}
+        className="ml-2"
       >
-        <Plus className="h-4 w-4" />
+        <GitBranch className="h-4 w-4" />
       </Button>
-      <span className="font-semibold text-white mx-2">{zoom}%</span>
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={handleZoomOut}
-        className="text-white"
-      >
-        <Minus className="h-4 w-4" />
-      </Button>
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={handleReset}
-        className="text-white"
-      >
-        <Expand className="h-4 w-4" />
-      </Button>
+      
+      <div className="flex items-center">
+        <Button
+          size="icon"
+          variant="ghost"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+        <span className="font-semibold">25%</span>
+        <Button
+          size="icon"
+          variant="ghost"
+        >
+          <Minus className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+        >
+          <Expand className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }

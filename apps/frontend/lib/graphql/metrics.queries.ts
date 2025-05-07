@@ -102,23 +102,9 @@ export const GET_ALL_MODELS_DATA = gql`
       edges {
         node {
           name
+          namespace
         }
       }
-    }
-    tamagotchiPlayerModels {
-      totalCount
-    }
-    tamagotchiBeastModels {
-      totalCount
-    }
-    tamagotchiFoodModels {
-      totalCount
-    }
-    tamagotchiBeastStatusModels {
-      totalCount
-    }
-    entities {
-      totalCount
     }
   }
 `

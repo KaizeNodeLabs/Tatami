@@ -6,8 +6,9 @@ const MODELS_JSON_PATH = path.join(process.cwd(), "public/models.json");
 
 export async function GET() {
   try {
-    const data = fs.readFileSync(MODELS_JSON_PATH, "utf-8");
-    return NextResponse.json(JSON.parse(data));
+    // Return empty models array instead of reading from file
+    // This ensures the application starts with no models
+    return NextResponse.json({ models: [] });
   } catch (error) {
     console.error("Error reading models.json:", error);
     return NextResponse.json(

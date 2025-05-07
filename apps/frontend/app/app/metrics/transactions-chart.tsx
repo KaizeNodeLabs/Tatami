@@ -6,22 +6,6 @@ import { TrendingDown, TrendingUp } from "lucide-react"
 import type { CustomTooltipProps } from "../../../types/charts"
 import type { TransactionDataPoint } from "@/types/charts"
 
-// Simulated data for the transactions chart
-// const transactionData: TransactionDataPoint[] = [
-//   { date: "2023-01", value: 320 },
-//   { date: "2023-02", value: 350 },
-//   { date: "2023-03", value: 410 },
-//   { date: "2023-04", value: 490 },
-//   { date: "2023-05", value: 550 },
-//   { date: "2023-06", value: 620 },
-//   { date: "2023-07", value: 690 },
-//   { date: "2023-08", value: 820 },
-//   { date: "2023-09", value: 635 },
-//   { date: "2023-10", value: 580 },
-//   { date: "2023-11", value: 510 },
-//   { date: "2023-12", value: 635 },
-// ]
-
 // Custom tooltip
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {

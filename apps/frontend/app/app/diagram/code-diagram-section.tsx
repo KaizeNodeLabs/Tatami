@@ -14,6 +14,8 @@ import { generateEntities } from "@/utils/generateEntities";
 import { ActionButtons } from "./action-buttons";
 import { DiagramControls } from "./diagram-controls";
 import { modelStateService } from "@/services/ModelStateService";
+import { ModelRelationships } from "./ModelRelationships";
+import { ModelRelationship, detectModelRelationships } from "@/utils/detectModelRelationships";
 
 export function CodeDiagramSection() {
   const [activeSection, setActiveSection] = useState("code");
@@ -21,17 +23,15 @@ export function CodeDiagramSection() {
   const [code, setCode] = useState("");
   const [editedCode, setEditedCode] = useState("");
   const [entities, setEntities] = useState<
-    { title: string; fields: EntityField[] }[]
+    { title: string; fields: EntityField[]; modelId: string }[]
   >([]);
-  const [relationships, setRelationships] = useState<
-    { from: string; to: string; fieldName?: string }[]
-  >([]);
+  const [modelRelationships, setModelRelationships] = useState<ModelRelationship[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
+  const [showRelationships, setShowRelationships] = useState(true);
   const { toast } = useToast();
-  const editorRef = useRef<
-    import("monaco-editor").editor.IStandaloneCodeEditor | null
-  >(null);
+  const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
+  const diagramContainerRef = useRef<HTMLDivElement>(null);
 
   function handleEditorDidMount(
     editor: import("monaco-editor").editor.IStandaloneCodeEditor
@@ -77,12 +77,11 @@ export function CodeDiagramSection() {
       }
 
       setEntities(generateEntities(models));
-
-      if (models.length > 0) {
-        const newRelationships = extractRelationships(models);
-        setRelationships(newRelationships);
-      }
-
+      
+      // Detect and set model relationships
+      const relationships = detectModelRelationships(models);
+      setModelRelationships(relationships);
+      
       setLoading(false);
     });
 
@@ -91,70 +90,9 @@ export function CodeDiagramSection() {
     return () => subscription.unsubscribe();
   }, [hasCustomEdits]);
 
-  useEffect(() => {
-    setLoading(true);
-    fetch("/api/models")
-      .then((res) => res.json())
-      .then((data) => {
-        const generatedCode = generateCairoCode(data.models || []);
-        setCode(generatedCode);
-        setEditedCode(generatedCode); 
-        setEntities(generateEntities(data.models || []));
-
-        if (data.models && data.models.length > 0) {
-          const newRelationships = extractRelationships(data.models);
-          setRelationships(newRelationships);
-        }
-
-        setLoading(false);
-      })
-      .catch((err) => console.error("Error loading models:", err));
-  }, []);
-
-  const extractRelationships = (models: any[]) => {
-    const relationshipsList: {
-      from: string;
-      to: string;
-      fieldName?: string;
-    }[] = [];
-
-    models.forEach((model) => {
-      if (model.fields) {
-        model.fields.forEach((field: any) => {
-          if (field.isReference && field.referenceModel) {
-            relationshipsList.push({
-              from: model.name,
-              to: field.referenceModel,
-              fieldName: field.name,
-            });
-          }
-        });
-      }
-    });
-
-    if (models.length > 0 && relationshipsList.length === 0) {
-      const modelNames = models.map((m) => m.name);
-      if (modelNames.length >= 2) {
-        relationshipsList.push({
-          from: modelNames[0],
-          to: modelNames[1],
-        });
-      }
-      if (modelNames.length >= 3) {
-        relationshipsList.push({
-          from: modelNames[0],
-          to: modelNames[2],
-        });
-      }
-      if (modelNames.length >= 4) {
-        relationshipsList.push({
-          from: modelNames[1],
-          to: modelNames[3],
-        });
-      }
-    }
-
-    return relationshipsList;
+  // Handle relationship visibility toggle
+  const handleToggleRelationships = (visible: boolean) => {
+    setShowRelationships(visible);
   };
 
   // Determine which code to display
@@ -316,14 +254,35 @@ export function CodeDiagramSection() {
             </div>
           )
         ) : (
-          <DraggableDiagram
-            entities={diagramEntities}
-            relationships={relationships}
-          />
+          <div 
+            ref={diagramContainerRef}
+            className="bg-neutral p-10 overflow-auto h-full relative"
+          >
+            {/* Grid for model cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {entities.length === 0 ? (
+                <p className="text-gray-500">No models created yet</p>
+              ) : (
+                entities.map(({ title, fields, modelId }) => (
+                  <EntityCard 
+                    key={modelId} 
+                    title={title} 
+                    fields={fields} 
+                    modelId={modelId} 
+                  />
+                ))
+              )}
+            </div>
+            
+            {/* Relationship lines */}
+            {activeSection === "diagram" && entities.length > 0 && showRelationships && (
+              <ModelRelationships relationships={modelRelationships} />
+            )}
+          </div>
         )}
       </div>
 
-      {activeSection === "diagram" && <DiagramControls />}
+      {activeSection === "diagram" && <DiagramControls onToggleRelationships={handleToggleRelationships} />}
     </section>
   );
 }

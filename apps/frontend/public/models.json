@@ -1,6 +1,7 @@
 {
   "models": [
     {
+<<<<<<< HEAD
       "id": "model_1746271143845",
       "name": "New Model 1",
       "expanded": true,
@@ -14,6 +15,15 @@
         {
           "id": "prop_1746271155112",
           "name": "Software Engineer",
+=======
+      "id": "model_1746200845008",
+      "name": "beast",
+      "expanded": true,
+      "properties": [
+        {
+          "id": "prop_1746200845008",
+          "name": "beast_id",
+>>>>>>> origin/main
           "dataType": "u32",
           "isKey": false
         }
@@ -21,11 +31,16 @@
       "traits": []
     },
     {
+<<<<<<< HEAD
       "id": "model_1746271167138",
+=======
+      "id": "model_1746200847083",
+>>>>>>> origin/main
       "name": "New Model 2",
       "expanded": true,
       "properties": [
         {
+<<<<<<< HEAD
           "id": "prop_1746271167138",
           "name": "Emmanuel",
           "dataType": "u32",
@@ -96,6 +111,18 @@
           "name": "Knights",
           "dataType": "u32",
           "isKey": false
+=======
+          "id": "prop_1746200847083",
+          "name": "beast_id",
+          "dataType": "u32",
+          "isKey": false
+        },
+        {
+          "id": "prop_1746200909864",
+          "name": "battle_id",
+          "dataType": "u32",
+          "isKey": true
+>>>>>>> origin/main
         }
       ],
       "traits": []

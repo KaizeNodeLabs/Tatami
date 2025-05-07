@@ -30,6 +30,13 @@ export function useGraphQLConnection(onError?: (msg: string) => void): UseGraphQ
    */
   const connect = async (endpoint: string) => {
     try {
+      // Clear GraphiQL tab/session state from localStorage
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('graphiql:')) {
+          localStorage.removeItem(key)
+        }
+      })
+
       // Check if the endpoint responds
       const response = await fetch(endpoint, {
         method: 'POST',

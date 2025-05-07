@@ -17,7 +17,7 @@ export function GraphiQLInterface({ fetcher }: GraphiQLInterfaceProps) {
 
   return (
     <div className="min-h-[600px] xl:h-full w-full">
-      <GraphiQL fetcher={fetcher} />
+      <GraphiQL fetcher={fetcher} defaultQuery="" />
     </div>
   )
 }

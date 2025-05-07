@@ -6,6 +6,11 @@ import type {
 
 export type CustomTooltipProps = TooltipProps<ValueType, NameType>;
 
+export interface ModelInfo {
+  name: string
+  namespace: string
+}
+
 export interface ModelDataItem {
   name: string
   value: number

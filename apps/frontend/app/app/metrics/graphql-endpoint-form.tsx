@@ -25,18 +25,18 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 interface GraphQLEndpointFormProps {
-  connect: (endpoint: string) => void
+  onSetEndpoint: (endpoint: string) => void
   onLoadMetrics: () => void
 }
 
-export function GraphQLEndpointForm({ connect, onLoadMetrics }: GraphQLEndpointFormProps) {
+export function GraphQLEndpointForm({ onSetEndpoint, onLoadMetrics }: GraphQLEndpointFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { endpoint: '' },
   })
 
   const onSubmit = (data: FormValues) => {
-    connect(data.endpoint)
+    onSetEndpoint(data.endpoint)
   }
 
   return (
