@@ -14,61 +14,17 @@ export interface EntityCardProps {
   title: string;
   fields: EntityField[];
   className?: string;
-  modelId?: string;
 }
 
 export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
-  ({ title, fields, className, modelId, ...props }, ref) => {
-    const getFieldIcon = (type: string, name: string, isPrimary: boolean) => {
-      switch (true) {
-        // Don't show type icon for ID fields
-        case isPrimary:
-          return null;
-        // Check if the type represents a number
-        case type.startsWith("u") || type.startsWith("i") || type === "felt252":
-          return (
-            <Image
-              src="/assets/diagram/var.svg"
-              alt="number"
-              width={16}
-              height={16}
-              className="text-primary"
-            />
-          );
-        // For string types
-        case type.toLowerCase() === "string" ||
-          type.toLowerCase() === "bytearray":
-          return (
-            <Image
-              src="/assets/diagram/string.svg"
-              alt="string"
-              width={16}
-              height={15}
-              className="text-primary"
-            />
-          );
-        // Default case - no icon
-        default:
-          return (
-            <Image
-              src="/assets/diagram/var.svg"
-              alt="number"
-              width={16}
-              height={16}
-              className="text-primary"
-            />
-          );
-      }
-    };
-
+  ({ title, fields, className, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
-          "w-fit overflow-hidden border border-black/30 rounded-md z-10",
+          "w-64 overflow-hidden border border-black/30 rounded-md bg-amber-500/90",
           className,
         )}
-        data-model-id={modelId}
         {...props}
       >
         {/* Header */}
