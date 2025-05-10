@@ -1,33 +1,41 @@
 {
   "models": [
     {
-      "id": "model_1746200845008",
-      "name": "beast",
+      "id": "model_1746894292819",
+      "name": "New Model 1",
       "expanded": true,
       "properties": [
         {
-          "id": "prop_1746200845008",
-          "name": "beast_id",
+          "id": "prop_1746894292819",
+          "name": "",
           "dataType": "u32",
-          "isKey": false
+          "isKey": true
         }
       ],
       "traits": []
     },
     {
-      "id": "model_1746200847083",
+      "id": "model_1746894293643",
       "name": "New Model 2",
       "expanded": true,
       "properties": [
         {
-          "id": "prop_1746200847083",
-          "name": "beast_id",
+          "id": "prop_1746894293643",
+          "name": "",
           "dataType": "u32",
-          "isKey": false
-        },
+          "isKey": true
+        }
+      ],
+      "traits": []
+    },
+    {
+      "id": "model_1746894315038",
+      "name": "New Model 3",
+      "expanded": true,
+      "properties": [
         {
-          "id": "prop_1746200909864",
-          "name": "battle_id",
+          "id": "prop_1746894315038",
+          "name": "",
           "dataType": "u32",
           "isKey": true
         }

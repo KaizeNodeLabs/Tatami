@@ -27,6 +27,7 @@ export function CodeDiagramSection() {
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
   const [showRelationships, setShowRelationships] = useState(true);
   const { toast } = useToast();
+  const [entityPositions, setEntityPositions] = useState<Record<string, { x: number; y: number }>>({});
   const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
   const diagramContainerRef = useRef<HTMLDivElement>(null);
 
@@ -127,6 +128,61 @@ export function CodeDiagramSection() {
       duration: 2000,
       style: { color: "white" },
     });
+  };
+
+  const handleCardDragStart = (event: React.DragEvent<HTMLDivElement>, modelId: string) => {
+    const cardElement = event.currentTarget;
+    const cardRect = cardElement.getBoundingClientRect();
+    
+    // Calculate offset from mouse to top-left of card
+    const offsetX = event.clientX - cardRect.left;
+    const offsetY = event.clientY - cardRect.top;
+
+    event.dataTransfer.setData("application/json", JSON.stringify({ modelId, offsetX, offsetY }));
+    event.dataTransfer.effectAllowed = "move";
+
+    // If not already absolutely positioned, capture its current position relative to the diagram container
+    // This ensures a smooth transition from grid layout to absolute positioning.
+    if (!entityPositions[modelId] && diagramContainerRef.current) {
+      const diagramRect = diagramContainerRef.current.getBoundingClientRect();
+      const initialX = cardRect.left - diagramRect.left;
+      const initialY = cardRect.top - diagramRect.top;
+      
+      // Set initial position to prevent jump, then allow drag to update it
+      setEntityPositions(prev => ({
+        ...prev,
+        [modelId]: { x: initialX, y: initialY }
+      }));
+    }
+  };
+
+  const handleDiagramDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault(); // Necessary to allow dropping
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDiagramDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (!diagramContainerRef.current) return;
+
+    try {
+      const dataString = event.dataTransfer.getData("application/json");
+      if (!dataString) return;
+
+      const { modelId, offsetX, offsetY } = JSON.parse(dataString);
+      if (!modelId) return;
+
+      const diagramRect = diagramContainerRef.current.getBoundingClientRect();
+      const newX = event.clientX - diagramRect.left - offsetX;
+      const newY = event.clientY - diagramRect.top - offsetY;
+
+      setEntityPositions(prev => ({
+        ...prev,
+        [modelId]: { x: newX, y: newY },
+      }));
+    } catch (e) {
+      console.error("Error processing drop data:", e);
+    }
   };
 
   return (
@@ -241,27 +297,38 @@ export function CodeDiagramSection() {
         ) : (
           <div 
             ref={diagramContainerRef}
-            className="bg-neutral p-10 overflow-auto h-full relative"
+            className="bg-neutral p-10 overflow-auto h-full relative" // Ensure this container is 'relative'
+            onDragOver={handleDiagramDragOver}
+            onDrop={handleDiagramDrop}
           >
             {/* Grid for model cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {entities.length === 0 ? (
                 <p className="text-gray-500">No models created yet</p>
               ) : (
-                entities.map(({ title, fields, modelId }) => (
-                  <EntityCard 
-                    key={modelId} 
-                    title={title} 
-                    fields={fields} 
-                    modelId={modelId} 
-                  />
-                ))
+                entities.map(({ title, fields, modelId }) => {
+                  const position = entityPositions[modelId];
+                  const cardStyle: React.CSSProperties = position
+                    ? { position: 'absolute', left: `${position.x}px`, top: `${position.y}px`, zIndex: 20 }
+                    : { zIndex: 10 }; // Default zIndex for grid items, can be removed if not needed
+
+                  return (
+                    <EntityCard 
+                      key={modelId} 
+                      title={title} 
+                      fields={fields} 
+                      modelId={modelId}
+                      style={cardStyle}
+                      onDragStart={handleCardDragStart}
+                    />
+                  );
+                })
               )}
             </div>
             
             {/* Relationship lines */}
-            {activeSection === "diagram" && entities.length > 0 && showRelationships && (
-              <ModelRelationships relationships={modelRelationships} />
+            {activeSection === "diagram" && entities.length > 0 && showRelationships && diagramContainerRef.current && (
+              <ModelRelationships relationships={modelRelationships} diagramContainerElement={diagramContainerRef.current} />
             )}
           </div>
         )}

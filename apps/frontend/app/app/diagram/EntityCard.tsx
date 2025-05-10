@@ -13,11 +13,14 @@ export interface EntityCardProps {
   fields: EntityField[];
   className?: string;
   modelId?: string;
+  style?: React.CSSProperties; // For absolute positioning
+  onDragStart?: (event: React.DragEvent<HTMLDivElement>, modelId: string) => void; // Drag handler
 }
 
 export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
-  ({ title, fields, className, modelId, ...props }, ref) => {
+  ({ title, fields, className, modelId, style, onDragStart, ...props }, ref) => {
     const getFieldIcon = (type: string, name: string, isPrimary: boolean) => {
+      // ... (getFieldIcon implementation remains the same)
       switch (true) {
         // Don't show type icon for ID fields
         case isPrimary:
@@ -59,14 +62,19 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
       }
     };
 
+    const isDraggable = !!(modelId && onDragStart);
+
     return (
       <div
         ref={ref}
         className={cn(
-          "w-fit overflow-hidden border border-black/30 rounded-md z-10",
+          "w-fit overflow-hidden border border-black/30 rounded-md", // Default z-index handled by style prop
           className,
         )}
         data-model-id={modelId}
+        draggable={isDraggable}
+        onDragStart={isDraggable && modelId ? (e) => onDragStart!(e, modelId) : undefined}
+        style={style} // Apply dynamic style for positioning
         {...props}
       >
         {/* Header */}
