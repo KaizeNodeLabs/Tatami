@@ -63,34 +63,35 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
       <div
         ref={ref}
         className={cn(
-          "w-fit overflow-hidden border border-black/30 rounded-md z-10",
+          "w-fit md:w-[259.52px] overflow-hidden border border-black/30 rounded-md z-10",
           className,
         )}
         data-model-id={modelId}
         {...props}
       >
         {/* Header */}
-        <div className="bg-black px-2 py-2 flex items-center justify-between">
+        <div className="bg-[#ECA610] px-2 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image
               src="/assets/diagram/tree.svg"
               alt="tree"
               width={19}
               height={19}
+              className="text-black  "
             />
-            <h3 className="text-sm font-medium text-white">{title}</h3>
+            <h3 className="text-sm font-medium  text-black">{title}</h3>
           </div>
           <Image
             src="/assets/diagram/arrow-ne.svg"
             alt="expand"
             width={19}
             height={19}
-            className="cursor-pointer"
+            className="cursor-pointer text-black"
           />
         </div>
 
         {/* Fields */}
-        <div className="divide-y bg-white">
+        <div className="divide-y bg-[#1E1E1E]">
           {fields.map((field, index) => (
             <div
               key={`${field.name}-${index}`}
@@ -103,15 +104,15 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
                     alt="primary key"
                     width={19}
                     height={19}
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 bg- "
                   />
                 )}
                 {getFieldIcon(field.type, field.name, field.isPrimary ?? false)}
-                <span className="text-sm font-medium text-black truncate">
+                <span className="text-sm font-medium text-white truncate">
                   {field.name}
                 </span>
               </div>
-              <span className="text-sm text-[#9B9B9B] opacity-76 flex-shrink-0">
+              <span className="text-sm text-[] opacity-76 flex-shrink-0">
                 {field.type}
               </span>
             </div>

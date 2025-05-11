@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Editor from "@monaco-editor/react";
 
 import { EntityCard, type EntityField } from "@/app/app/diagram/EntityCard";
@@ -26,6 +26,9 @@ export function CodeDiagramSection() {
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
   const [showRelationships, setShowRelationships] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [diagramHeight, setDiagramHeight] = useState("70vh");
   const { toast } = useToast();
   const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
   const diagramContainerRef = useRef<HTMLDivElement>(null);
@@ -95,6 +98,45 @@ export function CodeDiagramSection() {
     setShowRelationships(visible);
   };
 
+  // Handle zoom change
+  const handleZoomChange = useCallback((newZoomLevel: number) => {
+    setZoomLevel(newZoomLevel);
+    
+    if (diagramContainerRef.current) {
+      const contentContainer = diagramContainerRef.current.querySelector('.diagram-content-container');
+      if (contentContainer) {
+        (contentContainer as HTMLElement).style.transform = `scale(${newZoomLevel / 100})`;
+        (contentContainer as HTMLElement).style.transformOrigin = 'center top';
+      }
+    }
+  }, []);
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = useCallback(() => {
+    setIsFullscreen(prev => !prev);
+    
+    // If exiting fullscreen, reset diagram height
+    if (isFullscreen) {
+      setDiagramHeight("70vh");
+    } else {
+      // Enter fullscreen mode
+      setDiagramHeight("calc(100vh - 120px)");
+    }
+  }, [isFullscreen]);
+
+  // Adjust diagram height
+  const increaseDiagramHeight = useCallback(() => {
+    if (!isFullscreen) {
+      setDiagramHeight(prev => {
+        const currentHeight = parseInt(prev);
+        if (!isNaN(currentHeight)) {
+          return `${currentHeight + 10}vh`;
+        }
+        return prev;
+      });
+    }
+  }, [isFullscreen]);
+
   // Determine which code to display
   const displayCode = hasCustomEdits ? editedCode : code;
 
@@ -130,7 +172,7 @@ export function CodeDiagramSection() {
   };
 
   return (
-    <section className="bg-neutral text-foreground rounded-xl shadow-md flex flex-col">
+    <section className={`bg-neutral text-foreground rounded-xl shadow-md flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
       <ActionButtons
         activeSection={activeSection}
         onToggleSection={() =>
@@ -156,7 +198,7 @@ export function CodeDiagramSection() {
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              <div className="flex justify-between p-2 border-b  mx-1">
+              <div className="flex justify-between p-2 border-b mx-1">
                 {hasCustomEdits && (
                   <button
                     onClick={resetToGenerated}
@@ -200,7 +242,6 @@ export function CodeDiagramSection() {
                     verticalScrollbarSize: 8,
                     horizontalScrollbarSize: 8,
                     alwaysConsumeMouseWheel: false
-
                   },
                   minimap: {
                     enabled: true,
@@ -210,7 +251,6 @@ export function CodeDiagramSection() {
                   },
                   lineNumbers: "on",
                   lineNumbersMinChars: 3,
-
                   renderWhitespace: "boundary",
                   renderLineHighlight: "all",
                   guides: {
@@ -219,14 +259,11 @@ export function CodeDiagramSection() {
                   },
                   cursorBlinking: "smooth",
                   cursorStyle: "line-thin",
-
                   find: {
                     addExtraSpaceOnTop: false,
                     autoFindInSelection: "never",
                     seedSearchStringFromSelection: "always"
                   },
-
-                  // Accesibilidad
                   mouseWheelZoom: true,
                   smoothScrolling: true,
                   padding: {
@@ -241,33 +278,50 @@ export function CodeDiagramSection() {
         ) : (
           <div 
             ref={diagramContainerRef}
-            className="bg-neutral p-10 overflow-auto h-full relative"
+            className="bg-neutral p-10 overflow-auto relative transition-all duration-300 ease-in-out"
+            style={{ height: diagramHeight }}
           >
-            {/* Grid for model cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {entities.length === 0 ? (
-                <p className="text-gray-500">No models created yet</p>
-              ) : (
-                entities.map(({ title, fields, modelId }) => (
-                  <EntityCard 
-                    key={modelId} 
-                    title={title} 
-                    fields={fields} 
-                    modelId={modelId} 
-                  />
-                ))
+            {/* Grid for model cards with zoom container */}
+            <div 
+              className="diagram-content-container transition-transform duration-300 ease-in-out"
+              style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'center top' }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {entities.length === 0 ? (
+                  <p className="text-gray-500">No models created yet</p>
+                ) : (
+                  entities.map(({ title, fields, modelId }) => (
+                    <EntityCard 
+                      key={modelId} 
+                      title={title} 
+                      fields={fields} 
+                      modelId={modelId} 
+                    />
+                  ))
+                )}
+              </div>
+              
+              {/* Relationship lines */}
+              {activeSection === "diagram" && entities.length > 0 && showRelationships && (
+                <ModelRelationships relationships={modelRelationships} />
               )}
             </div>
-            
-            {/* Relationship lines */}
-            {activeSection === "diagram" && entities.length > 0 && showRelationships && (
-              <ModelRelationships relationships={modelRelationships} />
-            )}
           </div>
         )}
       </div>
 
-      {activeSection === "diagram" && <DiagramControls onToggleRelationships={handleToggleRelationships} />}
+      {activeSection === "diagram" && (
+        <>
+          <DiagramControls 
+            onToggleRelationships={handleToggleRelationships} 
+            onZoomChange={handleZoomChange}
+            onToggleFullscreen={toggleFullscreen}
+            zoomLevel={zoomLevel}
+            isFullscreen={isFullscreen}
+          />
+          
+        </>
+      )}
     </section>
   );
 }
