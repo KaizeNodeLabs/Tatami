@@ -25,6 +25,7 @@ export function DiagramControls({
     if (onToggleRelationships) {
       onToggleRelationships(newState);
     }
+
   };
 
   const handleZoomIn = () => {
@@ -89,6 +90,7 @@ export function DiagramControls({
           title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
         >
           {isFullscreen ? <Minimize className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+
         </Button>
       </div>
     </div>

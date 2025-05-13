@@ -2,6 +2,7 @@
   "models": [
     {
       "id": "model_1746971754969",
+
       "name": "New Model 1",
       "expanded": true,
       "properties": [
@@ -20,18 +21,21 @@
         {
           "id": "prop_1746971828340",
           "name": "lebron",
+
           "dataType": "u32",
-          "isKey": false
+          "isKey": true
         }
       ],
       "traits": []
     },
     {
       "id": "model_1746971848351",
+
       "name": "New Model 2",
       "expanded": true,
       "properties": [
         {
+
           "id": "prop_1746971848351",
           "name": "victor james",
           "dataType": "u32",
@@ -46,6 +50,7 @@
         {
           "id": "prop_1746972057206",
           "name": "victor",
+
           "dataType": "u32",
           "isKey": false
         }
