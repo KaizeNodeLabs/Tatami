@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+
 import { Expand, Minus, Plus, GitBranch, Minimize } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -25,17 +26,18 @@ export function DiagramControls({
     if (onToggleRelationships) {
       onToggleRelationships(newState);
     }
+
   };
 
   const handleZoomIn = () => {
-    const newZoomLevel = Math.min(zoomLevel + 15, 200); // Maximum zoom of 200%
+    const newZoomLevel = Math.min(zoomLevel + 10, 200); // Maximum zoom of 200%
     if (onZoomChange) {
       onZoomChange(newZoomLevel);
     }
   };
 
   const handleZoomOut = () => {
-    const newZoomLevel = Math.max(zoomLevel - 15, 25); // Minimum zoom of 25%
+    const newZoomLevel = Math.max(zoomLevel - 10, 25); // Minimum zoom of 25%
     if (onZoomChange) {
       onZoomChange(newZoomLevel);
     }
@@ -61,6 +63,7 @@ export function DiagramControls({
       >
         <GitBranch className="h-4 w-4" />
       </Button>
+
       
       <div className="flex items-center gap-2">
         <Button

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import Editor from "@monaco-editor/react";
-
 import { EntityCard, type EntityField } from "@/app/app/diagram/EntityCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +11,10 @@ import { ActionButtons } from "./action-buttons";
 import { DiagramControls } from "./diagram-controls";
 import { modelStateService } from "@/services/ModelStateService";
 import { ModelRelationships } from "./ModelRelationships";
-import { ModelRelationship, detectModelRelationships } from "@/utils/detectModelRelationships";
+import {
+  ModelRelationship,
+  detectModelRelationships,
+} from "@/utils/detectModelRelationships";
 
 export function CodeDiagramSection() {
   const [activeSection, setActiveSection] = useState("code");
@@ -22,23 +24,39 @@ export function CodeDiagramSection() {
   const [entities, setEntities] = useState<
     { title: string; fields: EntityField[]; modelId: string }[]
   >([]);
-  const [modelRelationships, setModelRelationships] = useState<ModelRelationship[]>([]);
+  const [modelRelationships, setModelRelationships] = useState<
+    ModelRelationship[]
+  >([]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
+
   const [showRelationships, setShowRelationships] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [diagramHeight, setDiagramHeight] = useState("70vh");
   const { toast } = useToast();
-  const editorRef = useRef<import("monaco-editor").editor.IStandaloneCodeEditor | null>(null);
+  const [entityPositions, setEntityPositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
+  const editorRef = useRef<
+    import("monaco-editor").editor.IStandaloneCodeEditor | null
+  >(null);
   const diagramContainerRef = useRef<HTMLDivElement>(null);
 
-  // Handler function for the Monaco editor
-  function handleEditorDidMount(editor: import("monaco-editor").editor.IStandaloneCodeEditor): void {
+  // --- Drag state for mouse-based dragging ---
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // --- Diagram vertical resizing ---
+
+  const resizingRef = useRef(false);
+
+  function handleEditorDidMount(
+    editor: import("monaco-editor").editor.IStandaloneCodeEditor
+  ): void {
     editorRef.current = editor;
   }
 
-  // Handle code changes in the editor
   function handleEditorChange(value: string | undefined): void {
     if (isEditing && value !== undefined) {
       setEditedCode(value);
@@ -46,7 +64,6 @@ export function CodeDiagramSection() {
     }
   }
 
-  // Toggle editing mode
   const toggleEditMode = () => {
     if (isEditing && hasCustomEdits) {
       toast({
@@ -67,24 +84,18 @@ export function CodeDiagramSection() {
       style: { color: "white" },
     });
   };
-  
-  // Subscribe to model changes
+
   useEffect(() => {
-    const subscription = modelStateService.models$.subscribe(models => {
+    const subscription = modelStateService.models$.subscribe((models) => {
       const generatedCode = generateCairoCode(models);
 
-      // Only update code if we haven't made custom edits
       if (!hasCustomEdits) {
         setCode(generatedCode);
         setEditedCode(generatedCode);
       }
 
       setEntities(generateEntities(models));
-      
-      // Detect and set model relationships
-      const relationships = detectModelRelationships(models);
-      setModelRelationships(relationships);
-      
+      setModelRelationships(detectModelRelationships(models));
       setLoading(false);
     });
 
@@ -92,6 +103,7 @@ export function CodeDiagramSection() {
 
     return () => subscription.unsubscribe();
   }, [hasCustomEdits]);
+
 
   // Handle relationship visibility toggle
   const handleToggleRelationships = (visible: boolean) => {
@@ -165,11 +177,124 @@ export function CodeDiagramSection() {
     setHasCustomEdits(false);
     toast({
       title: "Code reset",
-      description: "Your changes have been discarded and the generated code restored",
+      description:
+        "Your changes have been discarded and the generated code restored",
       duration: 2000,
       style: { color: "white" },
     });
   };
+
+  // --- Mouse-based dragging handlers ---
+  const handleCardMouseDown = (
+    event: React.MouseEvent<HTMLDivElement>,
+    modelId: string
+  ) => {
+    event.preventDefault();
+    if (!diagramContainerRef.current) return;
+    const cardRect = event.currentTarget.getBoundingClientRect();
+    const diagramRect = diagramContainerRef.current.getBoundingClientRect();
+    const offsetX = event.clientX - cardRect.left;
+    const offsetY = event.clientY - cardRect.top;
+
+    setDraggingId(modelId);
+    setDragOffset({ x: offsetX, y: offsetY });
+  };
+
+  const handleMouseMove = (event: MouseEvent) => {
+    if (!draggingId || !diagramContainerRef.current) return;
+    const diagramRect = diagramContainerRef.current.getBoundingClientRect();
+    let newX = event.clientX - diagramRect.left - dragOffset.x;
+    let newY = event.clientY - diagramRect.top - dragOffset.y;
+
+    newX = Math.max(0, Math.min(newX, diagramRect.width - 220));
+    newY = Math.max(0, Math.min(newY, diagramRect.height - 80));
+
+    setEntityPositions((prev) => ({
+      ...prev,
+      [draggingId]: { x: newX, y: newY },
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setDraggingId(null);
+  };
+
+  useEffect(() => {
+    if (draggingId) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "none";
+    } else {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "";
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "";
+    };
+  }, [draggingId]);
+
+  // --- Diagram vertical resizing handlers ---
+  const handleResizeMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    resizingRef.current = true;
+    document.body.style.cursor = "ns-resize";
+  };
+
+  useEffect(() => {
+    const handleResizeMouseMove = (e: MouseEvent) => {
+      if (resizingRef.current && diagramContainerRef.current) {
+        const containerRect = diagramContainerRef.current.getBoundingClientRect();
+        const minHeight = 300;
+        const maxHeight = window.innerHeight - 100;
+        let newHeight = e.clientY - containerRect.top;
+        newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+        setDiagramHeight(newHeight);
+      }
+    };
+    const handleResizeMouseUp = () => {
+      if (resizingRef.current) {
+        resizingRef.current = false;
+        document.body.style.cursor = "";
+      }
+    };
+    window.addEventListener("mousemove", handleResizeMouseMove);
+    window.addEventListener("mouseup", handleResizeMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleResizeMouseMove);
+      window.removeEventListener("mouseup", handleResizeMouseUp);
+      document.body.style.cursor = "";
+    };
+  }, []);
+
+  // --- Always assign absolute positions for all cards when entering diagram view ---
+  useEffect(() => {
+    if (activeSection !== "diagram") return;
+    setEntityPositions((prev) => {
+      const updated = { ...prev };
+      let changed = false;
+      let x = 40, y = 40, col = 0, row = 0;
+      const colWidth = 260, rowHeight = 160, maxCols = 3;
+      for (const entity of entities) {
+        if (!updated[entity.modelId]) {
+          updated[entity.modelId] = { x, y };
+          changed = true;
+          col++;
+          if (col >= maxCols) {
+            col = 0;
+            row++;
+            x = 40;
+            y = 40 + row * rowHeight;
+          } else {
+            x += colWidth;
+          }
+        }
+      }
+      return changed ? updated : prev;
+    });
+  }, [activeSection, entities]);
 
   return (
     <section className={`bg-neutral text-foreground rounded-xl shadow-md flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
@@ -215,10 +340,11 @@ export function CodeDiagramSection() {
                   )}
                   <button
                     onClick={toggleEditMode}
-                    className={`text-xs px-3 py-1 rounded ${isEditing
-                      ? "bg-green-500 text-white"
-                      : "bg-blue-500 text-white"
-                      }`}
+                    className={`text-xs px-3 py-1 rounded ${
+                      isEditing
+                        ? "bg-green-500 text-white"
+                        : "bg-blue-500 text-white"
+                    }`}
                   >
                     {isEditing ? "Save" : "Edit Code"}
                   </button>
@@ -242,12 +368,13 @@ export function CodeDiagramSection() {
                     verticalScrollbarSize: 8,
                     horizontalScrollbarSize: 8,
                     alwaysConsumeMouseWheel: false
+
                   },
                   minimap: {
                     enabled: true,
                     maxColumn: 80,
                     renderCharacters: false,
-                    showSlider: "always"
+                    showSlider: "always",
                   },
                   lineNumbers: "on",
                   lineNumbersMinChars: 3,
@@ -255,20 +382,20 @@ export function CodeDiagramSection() {
                   renderLineHighlight: "all",
                   guides: {
                     indentation: true,
-                    highlightActiveIndentation: true
+                    highlightActiveIndentation: true,
                   },
                   cursorBlinking: "smooth",
                   cursorStyle: "line-thin",
                   find: {
                     addExtraSpaceOnTop: false,
                     autoFindInSelection: "never",
-                    seedSearchStringFromSelection: "always"
+                    seedSearchStringFromSelection: "always",
                   },
                   mouseWheelZoom: true,
                   smoothScrolling: true,
                   padding: {
                     top: 12,
-                    bottom: 12
+                    bottom: 12,
                   },
                 }}
                 theme="hc-black"
@@ -276,7 +403,7 @@ export function CodeDiagramSection() {
             </div>
           )
         ) : (
-          <div 
+          <div
             ref={diagramContainerRef}
             className="bg-neutral p-10 overflow-auto relative transition-all duration-300 ease-in-out"
             style={{ height: diagramHeight }}
@@ -305,6 +432,7 @@ export function CodeDiagramSection() {
               {activeSection === "diagram" && entities.length > 0 && showRelationships && (
                 <ModelRelationships relationships={modelRelationships} />
               )}
+
             </div>
           </div>
         )}
