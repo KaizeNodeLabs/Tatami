@@ -29,7 +29,6 @@ export function CodeDiagramSection() {
   >([]);
   const [isEditing, setIsEditing] = useState(false);
   const [hasCustomEdits, setHasCustomEdits] = useState(false);
-
   const [showRelationships, setShowRelationships] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -103,7 +102,6 @@ export function CodeDiagramSection() {
 
     return () => subscription.unsubscribe();
   }, [hasCustomEdits]);
-
 
   // Handle relationship visibility toggle
   const handleToggleRelationships = (visible: boolean) => {
@@ -432,7 +430,6 @@ export function CodeDiagramSection() {
               {activeSection === "diagram" && entities.length > 0 && showRelationships && (
                 <ModelRelationships relationships={modelRelationships} />
               )}
-
             </div>
           </div>
         )}
@@ -447,7 +444,6 @@ export function CodeDiagramSection() {
             zoomLevel={zoomLevel}
             isFullscreen={isFullscreen}
           />
-          
         </>
       )}
     </section>

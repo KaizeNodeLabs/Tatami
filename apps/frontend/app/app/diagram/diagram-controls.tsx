@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-
 import { Expand, Minus, Plus, GitBranch, Minimize } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -63,7 +62,6 @@ export function DiagramControls({
       >
         <GitBranch className="h-4 w-4" />
       </Button>
-
       
       <div className="flex items-center gap-2">
         <Button
