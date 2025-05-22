@@ -15,7 +15,7 @@ import { MemoizedModelSidebarSection } from "./model-sidebar-section";
 import AppPage from "../page";
 import MetricsPage from "../metrics/page";
 
-export function AppSidebar({ setMainContent }: { setMainContent: (content: React.ReactNode) => void }) {
+export function AppSidebar({ setMainContent }: { setMainContent: (content: React.ReactNode, sectionKey: string) => void }) {
   const { selectedOption, dynamicContent, staticMenuItems, toggleOption,dynamicMenuItems } =
     useSidebar();
   const modelSection = useModelSection();
@@ -36,9 +36,9 @@ export function AppSidebar({ setMainContent }: { setMainContent: (content: React
                     onClick={() => {
                       toggleOption(item.id);
                       if (item.id === "models") {
-                        setMainContent(<AppPage />);
+                        setMainContent(<AppPage />, item.id);
                       } else if (item.id === "metrics") {
-                        setMainContent(<MetricsPage />);
+                        setMainContent(<MetricsPage />, item.id);
                       }
                     }}
                     tooltip={item.label}
