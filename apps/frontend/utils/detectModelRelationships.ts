@@ -21,24 +21,39 @@ export interface ModelRelationship {
  */
 export function detectModelRelationships(models: Model[]): ModelRelationship[] {
   const relationships: ModelRelationship[] = [];
-  
+
+  // Filter out models with no properties or only empty-named properties
+  const validModels = models.filter(
+    model =>
+      Array.isArray(model.properties) &&
+      model.properties.some(
+        prop => prop.isKey && prop.name && prop.name.trim() !== ""
+      )
+  );
+
   // Compare each pair of models
-  for (let i = 0; i < models.length; i++) {
-    for (let j = i + 1; j < models.length; j++) {
-      const modelA = models[i];
-      const modelB = models[j];
-      
-      // Extract only key fields from both models (isKey is true)
-      const keyFieldsA = modelA.properties.filter(prop => prop.isKey);
-      const keyFieldsB = modelB.properties.filter(prop => prop.isKey);
-      
+  for (let i = 0; i < validModels.length; i++) {
+    for (let j = i + 1; j < validModels.length; j++) {
+      const modelA = validModels[i];
+      const modelB = validModels[j];
+
+      // Extract only key fields from both models (isKey is true and name is not empty)
+      const keyFieldsA = modelA.properties.filter(
+        prop => prop.isKey && prop.name && prop.name.trim() !== ""
+      );
+      const keyFieldsB = modelB.properties.filter(
+        prop => prop.isKey && prop.name && prop.name.trim() !== ""
+      );
+
       // Find matching key fields
       const matches: { sourceField: string; targetField: string }[] = [];
-      
-      // For each key field in Model A, check if there's a matching key field in Model B
+
       keyFieldsA.forEach(fieldA => {
         keyFieldsB.forEach(fieldB => {
-          // Check for exact field name match (e.g., beast_id to beast_id)
+          // Skip if types don't match
+          if (fieldA.dataType !== fieldB.dataType) return;
+
+          // Check for exact field name match
           if (fieldA.name === fieldB.name) {
             matches.push({
               sourceField: fieldA.name,
@@ -46,7 +61,6 @@ export function detectModelRelationships(models: Model[]): ModelRelationship[] {
             });
           }
           // Check for common patterns like singular_id to plural
-          // For example: beast_id to beasts, user_id to users
           else if (
             (fieldA.name.endsWith('_id') && fieldB.name === fieldA.name.replace('_id', 's')) ||
             (fieldB.name.endsWith('_id') && fieldA.name === fieldB.name.replace('_id', 's'))
@@ -58,7 +72,7 @@ export function detectModelRelationships(models: Model[]): ModelRelationship[] {
           }
         });
       });
-      
+
       // If we found matches, add relationship
       if (matches.length > 0) {
         relationships.push({
@@ -71,6 +85,6 @@ export function detectModelRelationships(models: Model[]): ModelRelationship[] {
       }
     }
   }
-  
+
   return relationships;
-} 
+}

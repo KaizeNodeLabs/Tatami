@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { PropertyItem } from "./PropertyItem";
+import { Span } from "next/dist/trace";
 
 interface Property {
   id: string;
@@ -36,6 +37,7 @@ interface ModelItemProps {
     propertyId: string,
     isKey: boolean,
   ) => void;
+  allModelNames: string[];
 }
 
 export function ModelItem({
@@ -51,12 +53,32 @@ export function ModelItem({
   onPropertyNameChange,
   onPropertyDataTypeChange,
   onPropertyKeyChange,
+  allModelNames,
 }: ModelItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(name);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSaveName = () => {
-    onNameChange(id, editName);
+const handleSaveName = () => {
+    const trimmed = editName.trim();
+    if (trimmed === "") {
+      setEditName(name);
+      setIsEditing(false);
+      setError("Model name cannot be empty.");
+      return;
+    }
+    // Check for duplicate name (excluding self)
+    if (
+      allModelNames
+        .filter((n) => n !== name)
+        .map((n) => n.toLowerCase())
+        .includes(trimmed.toLowerCase())
+    ) {
+      setError("Model name already exists.");
+      return;
+    }
+    setError(null);
+    onNameChange(id, trimmed);
     setIsEditing(false);
   };
 
@@ -80,10 +102,16 @@ export function ModelItem({
             <div className="flex items-center gap-2">
               <Input
                 value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                onChange={(e) => {setEditName(e.target.value);
+                  setError(null);
+                }
+                }
                 className="h-8 bg-gray-700 border-none text-white"
                 autoFocus
               />
+              <span>
+                [{error && <span className="text-red-500 text-xs">{error}</span>}]
+              </span>
               <Button
                 size="sm"
                 onClick={handleSaveName}
