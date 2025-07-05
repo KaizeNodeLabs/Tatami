@@ -14,13 +14,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from 'react-i18next';
 import LanguageToggleButton from '../LanguageToggleButton';
+import { memo, useCallback } from 'react';
 
-export default function Navbar() {
+const Navbar = memo(() => {
   const logoSrc = "/Primary Logo_Primary Color.svg";
 
   const { t, i18n } = useTranslation();
 
-  const debounce = (func: Function, delay: number) => {
+  const debounce = useCallback((func: Function, delay: number) => {
     let timeoutId: NodeJS.Timeout;
     return (...args: any[]) => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -28,14 +29,20 @@ export default function Navbar() {
         func(...args);
       }, delay);
     };
-  };
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 w-full transition-colors duration-300 bg-neutral">
       <div className="container flex h-16 items-center">
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Image src={logo} width={50} height={50} alt="Tatami logo" />
+            <Image 
+              src={logo} 
+              width={50} 
+              height={50} 
+              alt="Tatami logo" 
+              priority
+            />
           </Link>
         </div>
 
@@ -77,7 +84,13 @@ export default function Navbar() {
               <div className="flex h-full flex-col bg-neutral">
                 <div className="flex items-center justify-between p-6">
                   <Link href="/" className="flex items-center">
-                    <img src={logoSrc} alt="Logo" className="h-14 w-auto" />
+                    <Image 
+                      src={logo}
+                      alt="Logo" 
+                      width={56}
+                      height={56}
+                      className="w-auto"
+                    />
                   </Link>
                   <SheetTrigger asChild>
                     <Button
@@ -95,7 +108,7 @@ export default function Navbar() {
                     {t('community')}
                   </Link>
                   <Link
-                    href="/build"
+                    href="/app"
                     className="text-lg font-medium text-primary-foreground"
                   >
                     {t('build')}
@@ -109,4 +122,8 @@ export default function Navbar() {
       </div>
     </nav>
   );
-}
+});
+
+Navbar.displayName = "Navbar";
+
+export default Navbar;

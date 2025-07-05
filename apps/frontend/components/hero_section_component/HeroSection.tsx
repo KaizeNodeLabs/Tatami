@@ -3,8 +3,9 @@
 import illustration from "@/public/hero-illustration.png";
 import Image from "next/image";
 import { useTranslation } from 'react-i18next';
+import { memo } from 'react';
 
-export default function HeroSection() {
+const HeroSection = memo(() => {
   const { t } = useTranslation();
 
   return (
@@ -27,9 +28,20 @@ export default function HeroSection() {
           </div>
         </div>
         <div className="md:w-1/2">
-          <Image src={illustration} height={1000} width={1000} alt="Tatami" />
+          <Image 
+            src={illustration} 
+            height={1000} 
+            width={1000} 
+            alt="Tatami" 
+            priority
+            placeholder="blur"
+          />
         </div>
       </div>
     </section>
   );
-}
+});
+
+HeroSection.displayName = "HeroSection";
+
+export default HeroSection;

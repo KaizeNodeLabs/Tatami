@@ -1,5 +1,6 @@
 :root {
-  --tatami-loader-bg: rgba(0, 0, 0, 0.93);
+  --tatami-loader-bg: rgba(0, 0, 0, 0.95);
+  --tatami-primary: #FEB913;
 }
 
 .tatami-loader-overlay {
@@ -13,22 +14,78 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  backdrop-filter: blur(4px);
 }
 
 .tatami-loader-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 24px;
+}
+
+.tatami-logo-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tatami-logo {
   width: 96px;
   height: 96px;
-  margin-bottom: 24px;
+  filter: drop-shadow(0 0 20px rgba(254, 185, 19, 0.3));
+  transition: all 0.3s ease;
 }
 
 .tatami-loader-text {
   color: #fff;
-  font-size: 1rem;
-  letter-spacing: 1px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.tatami-progress-bar {
+  width: 200px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tatami-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--tatami-primary), #fff);
+  border-radius: 10px;
+  animation: progress-fill 2s ease-in-out infinite;
+}
+
+@keyframes progress-fill {
+  0% {
+    width: 0%;
+    transform: translateX(-100%);
+  }
+  50% {
+    width: 100%;
+    transform: translateX(0%);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

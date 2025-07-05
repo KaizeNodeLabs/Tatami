@@ -15,10 +15,11 @@ export interface EntityCardProps {
   modelId?: string;
   style?: React.CSSProperties; // For absolute positioning
   onDragStart?: (event: React.DragEvent<HTMLDivElement>, modelId: string) => void; // Drag handler
+  onMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void; // Mouse down handler
 }
 
 export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
-  ({ title, fields, className, modelId, style, onDragStart, ...props }, ref) => {
+  ({ title, fields, className, modelId, style, onDragStart, onMouseDown, ...props }, ref) => {
     const getFieldIcon = (type: string, name: string, isPrimary: boolean) => {
       // ... (getFieldIcon implementation remains the same)
       switch (true) {
@@ -74,6 +75,7 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
         data-model-id={modelId}
         draggable={isDraggable}
         onDragStart={isDraggable && modelId ? (e) => onDragStart!(e, modelId) : undefined}
+        onMouseDown={onMouseDown}
         style={style} // Apply dynamic style for positioning
         {...props}
       >

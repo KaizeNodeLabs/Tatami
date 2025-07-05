@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Editor from "@monaco-editor/react";
+import { DynamicEditor } from "@/components/editor/DynamicEditor";
 import { EntityCard, type EntityField } from "@/app/app/diagram/EntityCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -34,22 +34,21 @@ export function CodeDiagramSection() {
   const [entityPositions, setEntityPositions] = useState<
     Record<string, { x: number; y: number }>
   >({});
-  const editorRef = useRef<
-    import("monaco-editor").editor.IStandaloneCodeEditor | null
-  >(null);
+  const editorRef = useRef<any | null>(null);
   const diagramContainerRef = useRef<HTMLDivElement>(null);
 
   // --- Drag state for mouse-based dragging ---
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
 
   // --- Diagram vertical resizing ---
   const [diagramHeight, setDiagramHeight] = useState<number>(600); // px
   const resizingRef = useRef(false);
 
-  function handleEditorDidMount(
-    editor: import("monaco-editor").editor.IStandaloneCodeEditor
-  ): void {
+  function handleEditorDidMount(editor: any): void {
     editorRef.current = editor;
   }
 
@@ -196,7 +195,8 @@ export function CodeDiagramSection() {
   useEffect(() => {
     const handleResizeMouseMove = (e: MouseEvent) => {
       if (resizingRef.current && diagramContainerRef.current) {
-        const containerRect = diagramContainerRef.current.getBoundingClientRect();
+        const containerRect =
+          diagramContainerRef.current.getBoundingClientRect();
         const minHeight = 300;
         const maxHeight = window.innerHeight - 100;
         let newHeight = e.clientY - containerRect.top;
@@ -225,8 +225,13 @@ export function CodeDiagramSection() {
     setEntityPositions((prev) => {
       const updated = { ...prev };
       let changed = false;
-      let x = 40, y = 40, col = 0, row = 0;
-      const colWidth = 260, rowHeight = 160, maxCols = 3;
+      let x = 40,
+        y = 40,
+        col = 0,
+        row = 0;
+      const colWidth = 260,
+        rowHeight = 160,
+        maxCols = 3;
       for (const entity of entities) {
         if (!updated[entity.modelId]) {
           updated[entity.modelId] = { x, y };
@@ -300,13 +305,13 @@ export function CodeDiagramSection() {
                   </button>
                 </div>
               </div>
-              <Editor
-                height="70vh"
-                className="bg-black"
-                defaultLanguage="rust"
+              <DynamicEditor
                 value={displayCode}
-                onChange={handleEditorChange}
+                language="rust"
+                height="70vh"
+                theme="hc-black"
                 onMount={handleEditorDidMount}
+                onChange={handleEditorChange}
                 options={{
                   readOnly: !isEditing,
                   scrollBeyondLastLine: false,
@@ -347,7 +352,6 @@ export function CodeDiagramSection() {
                     bottom: 12,
                   },
                 }}
-                theme="hc-black"
               />
             </div>
           )
@@ -355,7 +359,11 @@ export function CodeDiagramSection() {
           <div
             ref={diagramContainerRef}
             className="bg-neutral p-10 overflow-auto w-full relative"
-            style={{ height: diagramHeight, minHeight: 300, transition: "height 0.1s" }}
+            style={{
+              height: diagramHeight,
+              minHeight: 300,
+              transition: "height 0.1s",
+            }}
           >
             {entities.map(({ title, fields, modelId }) => {
               const position = entityPositions[modelId];
@@ -373,7 +381,8 @@ export function CodeDiagramSection() {
                       zIndex: draggingId === modelId ? 30 : 20,
                       cursor: draggingId === modelId ? "grabbing" : "grab",
                       minWidth: 220,
-                      pointerEvents: draggingId && draggingId !== modelId ? "none" : "auto",
+                      pointerEvents:
+                        draggingId && draggingId !== modelId ? "none" : "auto",
                     }}
                     onMouseDown={(e) => handleCardMouseDown(e, modelId)}
                   />
