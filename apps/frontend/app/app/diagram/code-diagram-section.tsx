@@ -11,24 +11,30 @@ import { ActionButtons } from "./action-buttons";
 import { DiagramControls } from "./diagram-controls";
 import { modelStateService } from "@/services/ModelStateService";
 import { ModelRelationships } from "./ModelRelationships";
+import { useModelStateContext } from "@/hooks/useModelState";
 import {
   ModelRelationship,
   detectModelRelationships,
 } from "@/utils/detectModelRelationships";
+import { Button } from "@/components/ui/button";
 
 export function CodeDiagramSection() {
-  const [activeSection, setActiveSection] = useState("code");
-  const [loading, setLoading] = useState(true);
-  const [code, setCode] = useState("");
-  const [editedCode, setEditedCode] = useState("");
-  const [entities, setEntities] = useState<
-    { title: string; fields: EntityField[]; modelId: string }[]
-  >([]);
-  const [modelRelationships, setModelRelationships] = useState<
-    ModelRelationship[]
-  >([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [hasCustomEdits, setHasCustomEdits] = useState(false);
+  const {
+    editedCode,
+    hasCustomEdits,
+    loading,
+    entities,
+    relationships,
+    isEditing,
+    setIsEditing,
+    toggleEditMode,
+    restoreInitialModel,
+    copyToClipboard,
+    downloadCode,
+    updatedEditedCode,
+    activeSections,
+    setActiveSection,
+  } = useModelStateContext();
   const [relationshipsVisible, setRelationshipsVisible] = useState(true);
   const { toast } = useToast();
   const [entityPositions, setEntityPositions] = useState<
@@ -54,84 +60,13 @@ export function CodeDiagramSection() {
 
   function handleEditorChange(value: string | undefined): void {
     if (isEditing && value !== undefined) {
-      setEditedCode(value);
-      setHasCustomEdits(true);
+      updatedEditedCode(value);
     }
   }
 
-  const toggleEditMode = () => {
-    if (isEditing && hasCustomEdits) {
-      toast({
-        title: "Changes saved",
-        description: "Your code changes have been saved",
-        duration: 2000,
-        style: { color: "white" },
-      });
-    }
+  const displayCode = editedCode;
 
-    setIsEditing(!isEditing);
-    toast({
-      title: isEditing ? "Edit mode disabled" : "Edit mode enabled",
-      description: isEditing
-        ? "The editor is now in read-only mode"
-        : "You can now edit the code directly",
-      duration: 2000,
-      style: { color: "white" },
-    });
-  };
-
-  useEffect(() => {
-    const subscription = modelStateService.models$.subscribe((models) => {
-      const generatedCode = generateCairoCode(models);
-
-      if (!hasCustomEdits) {
-        setCode(generatedCode);
-        setEditedCode(generatedCode);
-      }
-
-      setEntities(generateEntities(models));
-      setModelRelationships(detectModelRelationships(models));
-      setLoading(false);
-    });
-
-    modelStateService.initialize();
-
-    return () => subscription.unsubscribe();
-  }, [hasCustomEdits]);
-
-  const displayCode = hasCustomEdits ? editedCode : code;
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(displayCode);
-    toast({
-      title: "Code copied",
-      description: "The code has been copied to your clipboard",
-      duration: 2000,
-      style: { color: "white" },
-    });
-  };
-
-  const downloadCode = () => {
-    const blob = new Blob([displayCode], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "models.cairo";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const resetToGenerated = () => {
-    setEditedCode(code);
-    setHasCustomEdits(false);
-    toast({
-      title: "Code reset",
-      description:
-        "Your changes have been discarded and the generated code restored",
-      duration: 2000,
-      style: { color: "white" },
-    });
-  };
+  const resetToGenerated = restoreInitialModel;
 
   // --- Mouse-based dragging handlers ---
   const handleCardMouseDown = (
@@ -221,7 +156,7 @@ export function CodeDiagramSection() {
 
   // --- Always assign absolute positions for all cards when entering diagram view ---
   useEffect(() => {
-    if (activeSection !== "diagram") return;
+    if (activeSections !== "diagram") return;
     setEntityPositions((prev) => {
       const updated = { ...prev };
       let changed = false;
@@ -233,8 +168,9 @@ export function CodeDiagramSection() {
         rowHeight = 160,
         maxCols = 3;
       for (const entity of entities) {
-        if (!updated[entity.modelId]) {
-          updated[entity.modelId] = { x, y };
+        const id = entity.modelId;
+        if (typeof id === "string" && !updated[id]) {
+          updated[id] = { x, y };
           changed = true;
           col++;
           if (col >= maxCols) {
@@ -249,21 +185,21 @@ export function CodeDiagramSection() {
       }
       return changed ? updated : prev;
     });
-  }, [activeSection, entities]);
+  }, [activeSections, entities]);
 
   return (
     <section className="bg-neutral text-foreground rounded-xl shadow-md flex flex-col">
       <ActionButtons
-        activeSection={activeSection}
+        activeSection={activeSections}
         onToggleSection={() =>
-          setActiveSection(activeSection === "code" ? "diagram" : "code")
+          setActiveSection(activeSections === "code" ? "diagram" : "code")
         }
         onCopy={copyToClipboard}
         onDownload={downloadCode}
       />
 
       <div className="flex-1 overflow-hidden">
-        {activeSection === "code" ? (
+        {activeSections === "code" ? (
           loading ? (
             <div className="space-y-2 p-4">
               <Skeleton className="h-4 w-3/4" />
@@ -295,11 +231,10 @@ export function CodeDiagramSection() {
                   )}
                   <button
                     onClick={toggleEditMode}
-                    className={`text-xs px-3 py-1 rounded ${
-                      isEditing
-                        ? "bg-green-500 text-white"
-                        : "bg-blue-500 text-white"
-                    }`}
+                    className={`text-xs px-3 py-1 rounded ${isEditing
+                      ? "bg-green-500 text-white"
+                      : "bg-blue-500 text-white"
+                      }`}
                   >
                     {isEditing ? "Save" : "Edit Code"}
                   </button>
@@ -384,7 +319,6 @@ export function CodeDiagramSection() {
                       pointerEvents:
                         draggingId && draggingId !== modelId ? "none" : "auto",
                     }}
-                    onMouseDown={(e) => handleCardMouseDown(e, modelId)}
                   />
                 );
               }
@@ -392,7 +326,7 @@ export function CodeDiagramSection() {
             })}
 
             <ModelRelationships
-              relationships={modelRelationships}
+              relationships={relationships}
               diagramContainerElement={diagramContainerRef.current}
               relationshipsVisible={relationshipsVisible}
             />
@@ -432,7 +366,7 @@ export function CodeDiagramSection() {
         )}
       </div>
 
-      {activeSection === "diagram" && (
+      {activeSections === "diagram" && (
         <DiagramControls
           relationshipsVisible={relationshipsVisible}
           onToggleRelationships={setRelationshipsVisible}
