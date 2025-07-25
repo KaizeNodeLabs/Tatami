@@ -1,32 +1,3 @@
 {
-  "models": [
-    {
-      "id": "model_1751499204798",
-      "name": "New Model 1",
-      "expanded": true,
-      "properties": [
-        {
-          "id": "prop_1751499204798",
-          "name": "",
-          "dataType": "u32",
-          "isKey": true
-        }
-      ],
-      "traits": []
-    },
-    {
-      "id": "model_1751499207704",
-      "name": "New Model 2",
-      "expanded": true,
-      "properties": [
-        {
-          "id": "prop_1751499207704",
-          "name": "",
-          "dataType": "u32",
-          "isKey": true
-        }
-      ],
-      "traits": []
-    }
-  ]
+  "models": []
 }
