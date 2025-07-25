@@ -7,6 +7,8 @@ import AppNavbar from "@/app/app/navbar/app-navbar";
 import { useState, useEffect, lazy, Suspense } from "react";
 import Loader from "@/components/loader/Loader";
 import { usePathname } from "next/navigation";
+import { CartridgeProvider } from '@/components/providers/CartridgeProvider';
+import { ErrorBoundary } from '@/components/providers/ErrorBoundary';
 
 // Lazy load the main app page for faster initial load
 const AppPage = lazy(() => import("./page"));
@@ -66,32 +68,36 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body>
-        {loading && (
-          <Loader
-            message={
-              currentSection === "models"
-                ? "Loading Tatami..."
-                : `Loading ${currentSection}...`
-            }
-          />
-        )}
-        <AppNavbar />
-        <SidebarProvider defaultOpen={false} className="overflow-hidden">
-          <div className="relative flex w-full overflow-x-hidden">
-            <AppSidebar setMainContent={setMainContent} />
-            <div
-              id="main-content"
-              className="relative flex-1 h-full overflow-auto pt-5 transition-all duration-300 ease-in-out"
-            >
-              <Suspense fallback={<MainContentSkeleton />}>
-                {mainContent}
-              </Suspense>
-              <Toaster />
-              {/* Performance monitor disabled by default */}
-              {/* <PerformanceMonitor /> */}
-            </div>
-          </div>
-        </SidebarProvider>
+        <ErrorBoundary>
+          <CartridgeProvider>
+            {loading && (
+              <Loader
+                message={
+                  currentSection === "models"
+                    ? "Loading Tatami..."
+                    : `Loading ${currentSection}...`
+                }
+              />
+            )}
+            <AppNavbar />
+            <SidebarProvider defaultOpen={false} className="overflow-hidden">
+              <div className="relative flex w-full overflow-x-hidden">
+                <AppSidebar setMainContent={setMainContent} />
+                <div
+                  id="main-content"
+                  className="relative flex-1 h-full overflow-auto pt-5 transition-all duration-300 ease-in-out"
+                >
+                  <Suspense fallback={<MainContentSkeleton />}>
+                    {mainContent}
+                  </Suspense>
+                  <Toaster />
+                  {/* Performance monitor disabled by default */}
+                  {/* <PerformanceMonitor /> */}
+                </div>
+              </div>
+            </SidebarProvider>
+          </CartridgeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
