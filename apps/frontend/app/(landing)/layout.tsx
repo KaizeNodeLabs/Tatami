@@ -4,6 +4,9 @@ import "../globals.css";
 import Navbar from "@/components/navbar/Navbar";
 import { Footer } from "@/components/footer/footer";
 import I18nProviderWrapper from '@/components/I18nProviderWrapper';
+import { CartridgeProvider } from '@/components/providers/CartridgeProvider';
+import { ErrorBoundary } from '@/components/providers/ErrorBoundary';
+import { WebAuthnHelper } from '@/components/wallet/WebAuthnHelper';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,11 +58,16 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <I18nProviderWrapper>
-          <div className="relative flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <ErrorBoundary>
+            <CartridgeProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <WebAuthnHelper />
+              </div>
+            </CartridgeProvider>
+          </ErrorBoundary>
         </I18nProviderWrapper>
       </body>
     </html>
