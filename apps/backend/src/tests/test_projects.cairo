@@ -22,6 +22,7 @@ mod tests {
         projects.create_project(project_id, project_name, project_description);
 
         let project: Project = world.read_model(project_id);
+        assert!(project.exists(), "project should exist (just created)");
         assert!(project.is_active, "project should be active");
         assert_eq!(project.id, project_id, "project id is wrong");
         assert_eq!(project.name, project_name, "project name is wrong");
@@ -68,4 +69,37 @@ mod tests {
         // delete project (should fail)
         impersonate(IMPERSONATOR());
         projects.delete_project(project_id);
-    }}
+    }
+
+    #[test]
+    #[should_panic(expected:('Project: Does not exist', 'ENTRYPOINT_FAILED'))]
+    fn test_delete_project_inexistent() {
+        let world: WorldStorage = spawn_world();
+        let projects: IProjectsDispatcher = projects_dispatcher(world);
+
+        let project_id: u32 = 123;
+
+        // delete project (should fail)
+        impersonate(OWNER());
+        projects.delete_project(project_id);
+    }
+
+    #[test]
+    #[should_panic(expected:('Project: Does not exist', 'ENTRYPOINT_FAILED'))]
+    fn test_delete_project_deleted() {
+        let world: WorldStorage = spawn_world();
+        let projects: IProjectsDispatcher = projects_dispatcher(world);
+
+        let project_id: u32 = 123;
+
+        // create project
+        impersonate(OWNER());
+        projects.create_project(project_id, 'Test Project', 'This is a test project');
+
+        // delete project
+        projects.delete_project(project_id);
+
+        // try to delete again (should fail)
+        projects.delete_project(project_id);
+    }
+}

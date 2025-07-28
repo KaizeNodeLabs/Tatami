@@ -99,7 +99,12 @@ pub impl ProjectImpl of ProjectTrait {
 
     // Reactivates the project
     fn exists(self: @Project) -> bool {
-        (self.id.is_non_zero() && self.created_at.is_non_zero() && *self.is_deleted == false)
+        (
+            self.is_non_zero() &&
+            self.id.is_non_zero() &&
+            self.created_at.is_non_zero() &&
+            *self.is_deleted == false
+        )
     }
 
     // Calculates the number of days since project creation
@@ -136,10 +141,10 @@ pub impl ProjectImpl of ProjectTrait {
 // Assertion trait for project validation
 #[generate_trait]
 pub impl ProjectAssert of AssertTrait {
-    // Asserts that the project exists (is not zero)
+    // Asserts that the project exists (was created and is not deleted)
     #[inline(always)]
     fn assert_exists(self: Project) {
-        assert(self.is_non_zero(), 'Project: Does not exist');
+        assert(self.exists(), 'Project: Does not exist');
     }
 
     // Asserts that the project does not exist (is zero)

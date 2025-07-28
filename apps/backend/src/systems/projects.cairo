@@ -46,7 +46,9 @@ pub mod projects {
             let mut world = self.world_default();
             // read project model
             let mut project: Project = world.read_model(id);
-            // check if caller is owner
+            // assert project exists
+            project.assert_exists();
+            // assert caller is owner
             let caller: ContractAddress = starknet::get_caller_address();
             project.assert_owner(caller);
             // delete project
