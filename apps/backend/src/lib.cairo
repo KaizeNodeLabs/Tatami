@@ -1,4 +1,5 @@
 pub mod systems {
+    pub mod projects;
     pub mod actions;
 }
 
