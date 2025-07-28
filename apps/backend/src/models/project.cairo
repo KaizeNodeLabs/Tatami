@@ -8,7 +8,7 @@ const MAX_PROJECT_NAME_LENGTH: u32 = 64;
 const MAX_PROJECT_DESCRIPTION_LENGTH: u32 = 256;
 
 /// Project model for tracking user-created projects and their metadata
-#[derive(Copy, Drop, Serde, IntrospectPacked, Debug)]
+#[derive(Copy, Drop, Serde, Introspect, Debug)]
 #[dojo::model]
 pub struct Project {
     #[key]
