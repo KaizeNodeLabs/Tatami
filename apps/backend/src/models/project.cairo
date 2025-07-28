@@ -20,6 +20,7 @@ pub struct Project {
     pub name: felt252,
     pub description: felt252,
     pub is_active: bool,
+    pub is_deleted: bool,
 }
 
 // Trait Implementations
@@ -42,6 +43,7 @@ pub impl ProjectImpl of ProjectTrait {
             name,
             description,
             is_active: true,
+            is_deleted: false,
         }
     }
 
@@ -83,6 +85,21 @@ pub impl ProjectImpl of ProjectTrait {
     // Reactivates the project
     fn activate(ref self: Project) {
         self.is_active = true;
+    }
+
+    // Deactivates the project
+    fn delete(ref self: Project) {
+        self.is_deleted = true;
+    }
+
+    // Reactivates the project
+    fn undelete(ref self: Project) {
+        self.is_deleted = false;
+    }
+
+    // Reactivates the project
+    fn exists(self: @Project) -> bool {
+        (self.id.is_non_zero() && self.created_at.is_non_zero() && *self.is_deleted == false)
     }
 
     // Calculates the number of days since project creation
@@ -158,6 +175,7 @@ pub impl ZeroableProjectTrait of Zero<Project> {
             name: 0,
             description: 0,
             is_active: false,
+            is_deleted: false,
         }
     }
 
@@ -327,6 +345,23 @@ mod tests {
         // Test reactivation
         project.activate();
         assert_eq!(project.is_active, true, "Should be active");
+    }
+
+    #[test]
+    #[available_gas(1000000)]
+    fn test_project_delete_undelete() {
+        let mut project = ProjectTrait::new(1, mock_address(), 1640995200, 'Test', 'Description');
+
+        // Project should be active by default
+        assert_eq!(project.is_active, true, "Should be active by default");
+
+        // Test deletion
+        project.delete();
+        assert_eq!(project.is_deleted, true, "Should be deleted");
+
+        // Test undeletion
+        project.undelete();
+        assert_eq!(project.is_deleted, false, "Should be undeleted");
     }
 
     #[test]
