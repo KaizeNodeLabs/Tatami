@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod tests {
     use dojo_cairo_test::WorldStorageTestTrait;
-    use dojo::model::{ModelStorage, ModelStorageTest};
-    use dojo::world::WorldStorageTrait;
     use dojo_cairo_test::{
-        spawn_test_world, NamespaceDef, TestResource, ContractDefTrait, ContractDef,
+        spawn_test_world, NamespaceDef, TestResource, ContractDef,
     };
 
     use dojo_starter::models::position::{Position, m_Position};
