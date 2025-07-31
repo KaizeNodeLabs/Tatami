@@ -22,20 +22,30 @@ export interface ModelRelationship {
 export function detectModelRelationships(models: Model[]): ModelRelationship[] {
   const relationships: ModelRelationship[] = [];
 
-  // Filter out models with no properties or only empty-named properties
-  const validModels = models.filter(
-    model =>
-      Array.isArray(model.properties) &&
-      model.properties.some(
-        prop => prop.isKey && prop.name && prop.name.trim() !== ""
-      )
-  );
+  // Enhanced: Filter out models that are empty, have only empty-named properties, or only key fields
+  const validModels = models.filter(model => {
+    if (!Array.isArray(model.properties) || model.properties.length === 0) return false;
+    // At least one non-empty key field
+    const hasValidKey = model.properties.some(
+      prop => prop.isKey && prop.name && prop.name.trim() !== ""
+    );
+    // At least one non-key field (to avoid empty models with only keys)
+    const hasNonKey = model.properties.some(
+      prop => !prop.isKey && prop.name && prop.name.trim() !== ""
+    );
+    // At least one property must have a non-empty name
+    const hasAnyNamed = model.properties.some(
+      prop => prop.name && prop.name.trim() !== ""
+    );
+    return hasValidKey && hasAnyNamed;
+  });
 
-  // Compare each pair of models
+  // Compare each pair of models (prevent self-relation)
   for (let i = 0; i < validModels.length; i++) {
     for (let j = i + 1; j < validModels.length; j++) {
       const modelA = validModels[i];
       const modelB = validModels[j];
+      if (modelA.id === modelB.id) continue; // Prevent self-relation
 
       // Extract only key fields from both models (isKey is true and name is not empty)
       const keyFieldsA = modelA.properties.filter(
@@ -45,13 +55,14 @@ export function detectModelRelationships(models: Model[]): ModelRelationship[] {
         prop => prop.isKey && prop.name && prop.name.trim() !== ""
       );
 
-      // Find matching key fields
+      // Find matching key fields (name and type must match exactly)
       const matches: { sourceField: string; targetField: string }[] = [];
 
       keyFieldsA.forEach(fieldA => {
         keyFieldsB.forEach(fieldB => {
-          // Skip if types don't match
+          // Skip if types don't match or names are empty
           if (fieldA.dataType !== fieldB.dataType) return;
+          if (!fieldA.name.trim() || !fieldB.name.trim()) return;
 
           // Check for exact field name match
           if (fieldA.name === fieldB.name) {
@@ -73,8 +84,16 @@ export function detectModelRelationships(models: Model[]): ModelRelationship[] {
         });
       });
 
-      // If we found matches, add relationship
-      if (matches.length > 0) {
+      // Only add relationship if both models have at least one key field and at least one non-key field
+      const modelAHasNonKey = modelA.properties.some(
+        prop => !prop.isKey && prop.name && prop.name.trim() !== ""
+      );
+      const modelBHasNonKey = modelB.properties.some(
+        prop => !prop.isKey && prop.name && prop.name.trim() !== ""
+      );
+
+      // If we found matches and both models are not "empty" (have more than just keys), add relationship
+      if (matches.length > 0 && modelAHasNonKey && modelBHasNonKey) {
         relationships.push({
           sourceModel: modelA.name,
           sourceModelId: modelA.id,
