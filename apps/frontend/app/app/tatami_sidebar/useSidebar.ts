@@ -1,9 +1,10 @@
-import { Database, LayoutTemplate } from "lucide-react";
+import { Database, LayoutTemplate, TestTube } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const staticMenuItems = [
   { id: "models", label: "Models", icon: Database },
   { id: "metrics", label: "Metrics", icon: LayoutTemplate },
+  { id: "unit-tests", label: "Unit Tests", icon: TestTube },
 ];
 
 const initialDynamicContent = {
