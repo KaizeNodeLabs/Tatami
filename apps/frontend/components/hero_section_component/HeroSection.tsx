@@ -4,6 +4,7 @@ import illustration from "@/public/hero-illustration.png";
 import Image from "next/image";
 import { useTranslation } from 'react-i18next';
 import { memo } from 'react';
+import { ConnectWallet } from '@/components/wallet/ConnectWallet';
 
 const HeroSection = memo(() => {
   const { t } = useTranslation();
@@ -19,12 +20,11 @@ const HeroSection = memo(() => {
             {t('leveragePower')}
           </p>
           <div className="flex flex-col md:flex-row gap-4">
-            <a
-              href="/app"
-              className="bg-yellow text-third-foreground font-semibold py-3 px-6 rounded-md transition-colors"
+            <ConnectWallet
+              className="bg-yellow text-third-foreground font-semibold py-3 px-6 rounded-md transition-colors hover:bg-yellow/90"
             >
               {t('tryTatami')}
-            </a>
+            </ConnectWallet>
           </div>
         </div>
         <div className="md:w-1/2">
