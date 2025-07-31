@@ -1,5 +1,11 @@
 import { Input } from "@/components/ui/input";
-import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Trash2,
+  BeakerIcon,
+} from "lucide-react";
 import { PropertyItem } from "../models/PropertyItem";
 import { Button } from "../../../components/ui/button";
 import { memo } from "react";
@@ -10,7 +16,7 @@ type Props = {
   modelSection: UseModelSectionReturn;
 };
 
-function ModelSidebarSection({ modelSection }: Props) { 
+function ModelSidebarSection({ modelSection }: Props) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="p-4 flex justify-end flex-shrink-0">
@@ -24,11 +30,21 @@ function ModelSidebarSection({ modelSection }: Props) {
 
       <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4 overflow-x-visible">
         {modelSection.models.map((model) => (
-          <div key={model.id} className="border border-neutral bg-neutral rounded-md mb-4">
+          <div
+            key={model.id}
+            className="border border-neutral bg-neutral rounded-md mb-4"
+          >
             <div className="flex items-center justify-between p-3 bg-neutral text-foreground flex-wrap">
               <div className="flex items-center gap-2 flex-1 flex-wrap">
-                <button type="button" onClick={() => modelSection.toggleModelExpansion(model.id)}>
-                  {model.expanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                <button
+                  type="button"
+                  onClick={() => modelSection.toggleModelExpansion(model.id)}
+                >
+                  {model.expanded ? (
+                    <ChevronDown className="h-5 w-5" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5" />
+                  )}
                 </button>
                 <div className="flex flex-1 flex-col gap-2 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -58,10 +74,14 @@ function ModelSidebarSection({ modelSection }: Props) {
                       }}
                     />
                     <div className="w-24 flex-shrink-0 min-w-0">
-                      <TraitsDropdown 
-                        modelId={model.id} 
-                        onTraitToggle={(modelId, trait, isSelected) => 
-                          modelSection.updateModelTraits(modelId, trait, isSelected)
+                      <TraitsDropdown
+                        modelId={model.id}
+                        onTraitToggle={(modelId, trait, isSelected) =>
+                          modelSection.updateModelTraits(
+                            modelId,
+                            trait,
+                            isSelected
+                          )
                         }
                         selectedTraits={model.traits || []}
                       />
@@ -70,7 +90,11 @@ function ModelSidebarSection({ modelSection }: Props) {
                 </div>
               </div>
               <div className="flex items-center gap-2 ml-4">
-                <button type="button" onClick={() => modelSection.deleteModel(model.id)} className="hover:text-red-500">
+                <button
+                  type="button"
+                  onClick={() => modelSection.deleteModel(model.id)}
+                  className="hover:text-red-500"
+                >
                   <Trash2 className="h-5 w-5" />
                 </button>
               </div>
@@ -78,7 +102,9 @@ function ModelSidebarSection({ modelSection }: Props) {
 
             {model.expanded && (
               <div className="p-3 bg-neutral">
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Properties</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                  Properties
+                </h3>
                 <div className="grid grid-cols-12 gap-1 text-xs font-medium text-muted-foreground mb-2 bg-background px-2 py-3">
                   <div className="col-span-5">Name</div>
                   <div className="col-span-4">Datatype</div>
@@ -94,15 +120,29 @@ function ModelSidebarSection({ modelSection }: Props) {
                     dataType={property.dataType}
                     isKey={property.isKey}
                     onNameChange={(propertyId, value) =>
-                      modelSection.updatePropertyName(model.id, propertyId, value)
+                      modelSection.updatePropertyName(
+                        model.id,
+                        propertyId,
+                        value
+                      )
                     }
                     onDataTypeChange={(propertyId, value) =>
-                      modelSection.updatePropertyDataType(model.id, propertyId, value)
+                      modelSection.updatePropertyDataType(
+                        model.id,
+                        propertyId,
+                        value
+                      )
                     }
                     onKeyChange={(propertyId, value) =>
-                      modelSection.updatePropertyKey(model.id, propertyId, value)
+                      modelSection.updatePropertyKey(
+                        model.id,
+                        propertyId,
+                        value
+                      )
                     }
-                    onDelete={(propertyId) => modelSection.deleteProperty(model.id, propertyId)}
+                    onDelete={(propertyId) =>
+                      modelSection.deleteProperty(model.id, propertyId)
+                    }
                   />
                 ))}
 
@@ -111,6 +151,13 @@ function ModelSidebarSection({ modelSection }: Props) {
                   className="w-full mt-2 text-text bg-background hover:bg-background/0 hover:text-primary-foreground border border-dotted border-foreground-500"
                 >
                   <span className="mr-1">+</span> Add property
+                </Button>
+                <Button
+                  onClick={() => modelSection.handleDownloadTest(model.id)}
+                  className="w-full mt-2 text-black bg-yellow hover:bg-yellow/90 font-medium flex items-center gap-2"
+                >
+                  <BeakerIcon className="h-4 w-4" />
+                  Generate Tests
                 </Button>
               </div>
             )}
