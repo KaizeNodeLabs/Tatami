@@ -1,6 +1,7 @@
 pub mod systems {
     pub mod projects;
     pub mod actions;
+    pub mod users;
 }
 
 pub mod models {
