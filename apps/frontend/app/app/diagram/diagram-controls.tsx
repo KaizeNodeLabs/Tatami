@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Expand, Minus, Plus, GitBranch } from "lucide-react";
+import { useDiagramStore } from "@/hooks/useDiagramStore";
 
 interface DiagramControlsProps {
   relationshipsVisible: boolean;
@@ -10,6 +11,8 @@ export function DiagramControls({
   relationshipsVisible,
   onToggleRelationships,
 }: DiagramControlsProps) {
+  const { zoomLevel, zoomIn, zoomOut, toggleFullscreen } = useDiagramStore();
+  
   const toggleRelationships = () => {
     onToggleRelationships(!relationshipsVisible);
   };
@@ -26,14 +29,29 @@ export function DiagramControls({
         <GitBranch className="h-4 w-4" />
       </Button>
       <div className="flex items-center">
-        <Button size="icon" variant="ghost">
+        <Button 
+          size="icon" 
+          variant="ghost"
+          onClick={zoomIn}
+          title="Zoom In (+15%)"
+        >
           <Plus className="h-4 w-4" />
         </Button>
-        <span className="font-semibold">25%</span>
-        <Button size="icon" variant="ghost">
+        <span className="font-semibold min-w-[3rem] text-center">{zoomLevel}%</span>
+        <Button 
+          size="icon" 
+          variant="ghost"
+          onClick={zoomOut}
+          title="Zoom Out (-15%)"
+        >
           <Minus className="h-4 w-4" />
         </Button>
-        <Button size="icon" variant="ghost">
+        <Button 
+          size="icon" 
+          variant="ghost"
+          onClick={toggleFullscreen}
+          title="Toggle Fullscreen"
+        >
           <Expand className="h-4 w-4" />
         </Button>
       </div>

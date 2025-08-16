@@ -17,6 +17,7 @@ import {
   detectModelRelationships,
 } from "@/utils/detectModelRelationships";
 import { Button } from "@/components/ui/button";
+import { useDiagramStore } from "@/hooks/useDiagramStore";
 
 export function CodeDiagramSection() {
   const {
@@ -35,6 +36,7 @@ export function CodeDiagramSection() {
     activeSections,
     setActiveSection,
   } = useModelStateContext();
+  const { zoomLevel, resetZoom } = useDiagramStore();
   const [relationshipsVisible, setRelationshipsVisible] = useState(true);
   const { toast } = useToast();
   const [entityPositions, setEntityPositions] = useState<
@@ -77,8 +79,11 @@ export function CodeDiagramSection() {
     if (!diagramContainerRef.current) return;
     const cardRect = event.currentTarget.getBoundingClientRect();
     const diagramRect = diagramContainerRef.current.getBoundingClientRect();
-    const offsetX = event.clientX - cardRect.left;
-    const offsetY = event.clientY - cardRect.top;
+    const scale = zoomLevel / 100;
+    
+    // Adjust offsets for zoom level
+    const offsetX = (event.clientX - cardRect.left) / scale;
+    const offsetY = (event.clientY - cardRect.top) / scale;
 
     setDraggingId(modelId);
     setDragOffset({ x: offsetX, y: offsetY });
@@ -87,11 +92,17 @@ export function CodeDiagramSection() {
   const handleMouseMove = (event: MouseEvent) => {
     if (!draggingId || !diagramContainerRef.current) return;
     const diagramRect = diagramContainerRef.current.getBoundingClientRect();
-    let newX = event.clientX - diagramRect.left - dragOffset.x;
-    let newY = event.clientY - diagramRect.top - dragOffset.y;
+    const scale = zoomLevel / 100;
+    
+    // Adjust mouse coordinates for zoom level
+    let newX = (event.clientX - diagramRect.left - dragOffset.x) / scale;
+    let newY = (event.clientY - diagramRect.top - dragOffset.y) / scale;
 
-    newX = Math.max(0, Math.min(newX, diagramRect.width - 220));
-    newY = Math.max(0, Math.min(newY, diagramRect.height - 80));
+    // Clamp to container bounds (accounting for zoom)
+    const containerWidth = diagramRect.width / scale;
+    const containerHeight = diagramRect.height / scale;
+    newX = Math.max(0, Math.min(newX, containerWidth - 220));
+    newY = Math.max(0, Math.min(newY, containerHeight - 80));
 
     setEntityPositions((prev) => ({
       ...prev,
@@ -300,9 +311,21 @@ export function CodeDiagramSection() {
               transition: "height 0.1s",
             }}
           >
+            <div
+              className="relative w-full h-full"
+              style={{
+                transform: `scale(${zoomLevel / 100})`,
+                transformOrigin: 'top left',
+                transition: 'transform 0.2s ease-in-out',
+                minWidth: '100%',
+                minHeight: '100%',
+              }}
+              onDoubleClick={resetZoom}
+              title="Double-click to reset zoom to 100%"
+            >
             {entities.map(({ title, fields, modelId }) => {
-              const position = entityPositions[modelId];
-              if (position) {
+              const position = modelId ? entityPositions[modelId] : undefined;
+              if (position && modelId) {
                 return (
                   <EntityCard
                     key={modelId}
@@ -319,6 +342,7 @@ export function CodeDiagramSection() {
                       pointerEvents:
                         draggingId && draggingId !== modelId ? "none" : "auto",
                     }}
+                    onMouseDown={(e) => handleCardMouseDown(e, modelId)}
                   />
                 );
               }
@@ -330,6 +354,7 @@ export function CodeDiagramSection() {
               diagramContainerElement={diagramContainerRef.current}
               relationshipsVisible={relationshipsVisible}
             />
+            </div>
 
             <div
               onMouseDown={handleResizeMouseDown}
