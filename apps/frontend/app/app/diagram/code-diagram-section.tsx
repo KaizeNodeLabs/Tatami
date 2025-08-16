@@ -18,6 +18,7 @@ import {
 } from "@/utils/detectModelRelationships";
 import { Button } from "@/components/ui/button";
 import { useDiagramStore } from "@/hooks/useDiagramStore";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 export function CodeDiagramSection() {
   const {
@@ -36,7 +37,8 @@ export function CodeDiagramSection() {
     activeSections,
     setActiveSection,
   } = useModelStateContext();
-  const { zoomLevel, resetZoom } = useDiagramStore();
+  const { zoomLevel, resetZoom, isFullscreen } = useDiagramStore();
+  const { toggleFullscreen } = useFullscreen();
   const [relationshipsVisible, setRelationshipsVisible] = useState(true);
   const { toast } = useToast();
   const [entityPositions, setEntityPositions] = useState<
@@ -69,6 +71,12 @@ export function CodeDiagramSection() {
   const displayCode = editedCode;
 
   const resetToGenerated = restoreInitialModel;
+
+  const handleToggleFullscreen = async () => {
+    if (diagramContainerRef.current) {
+      await toggleFullscreen(diagramContainerRef.current);
+    }
+  };
 
   // --- Mouse-based dragging handlers ---
   const handleCardMouseDown = (
@@ -304,10 +312,14 @@ export function CodeDiagramSection() {
         ) : (
           <div
             ref={diagramContainerRef}
-            className="bg-neutral p-10 overflow-auto w-full relative"
+            className={`bg-neutral p-10 overflow-auto w-full relative ${
+              isFullscreen 
+                ? 'fixed inset-0 z-[9999] bg-black' 
+                : ''
+            }`}
             style={{
-              height: diagramHeight,
-              minHeight: 300,
+              height: isFullscreen ? '100vh' : diagramHeight,
+              minHeight: isFullscreen ? '100vh' : 300,
               transition: "height 0.1s",
             }}
           >
@@ -356,37 +368,59 @@ export function CodeDiagramSection() {
             />
             </div>
 
-            <div
-              onMouseDown={handleResizeMouseDown}
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 12,
-                cursor: "ns-resize",
-                zIndex: 50,
-                background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.10))",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                userSelect: "none",
-              }}
-              aria-label="Resize diagram vertically"
-              tabIndex={0}
-              role="separator"
-            >
+            {/* Fullscreen Controls */}
+            {isFullscreen && (
+              <>
+                {/* Fullscreen Indicator */}
+                <div className="absolute top-4 left-4 z-[10000] bg-black/80 text-white px-3 py-1 rounded-md text-sm">
+                  Fullscreen Mode - Press ESC to exit
+                </div>
+                
+                {/* Floating Controls */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] bg-black/90 rounded-lg p-1 backdrop-blur-sm border border-white/20">
+                  <DiagramControls
+                    relationshipsVisible={relationshipsVisible}
+                    onToggleRelationships={setRelationshipsVisible}
+                    onToggleFullscreen={handleToggleFullscreen}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Resize handle - only show when not in fullscreen */}
+            {!isFullscreen && (
               <div
+                onMouseDown={handleResizeMouseDown}
                 style={{
-                  width: 40,
-                  height: 4,
-                  borderRadius: 2,
-                  background: "#bbb",
-                  opacity: 0.7,
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 12,
+                  cursor: "ns-resize",
+                  zIndex: 50,
+                  background:
+                    "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.10))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  userSelect: "none",
                 }}
-              />
-            </div>
+                aria-label="Resize diagram vertically"
+                tabIndex={0}
+                role="separator"
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 4,
+                    borderRadius: 2,
+                    background: "#bbb",
+                    opacity: 0.7,
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -395,6 +429,7 @@ export function CodeDiagramSection() {
         <DiagramControls
           relationshipsVisible={relationshipsVisible}
           onToggleRelationships={setRelationshipsVisible}
+          onToggleFullscreen={handleToggleFullscreen}
         />
       )}
     </section>

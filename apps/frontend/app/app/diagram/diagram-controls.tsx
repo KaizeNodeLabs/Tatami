@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { Expand, Minus, Plus, GitBranch } from "lucide-react";
+import { Expand, Minus, Plus, GitBranch, Minimize } from "lucide-react";
 import { useDiagramStore } from "@/hooks/useDiagramStore";
 
 interface DiagramControlsProps {
   relationshipsVisible: boolean;
   onToggleRelationships: (visible: boolean) => void;
+  onToggleFullscreen: () => void;
 }
 
 export function DiagramControls({
   relationshipsVisible,
   onToggleRelationships,
+  onToggleFullscreen,
 }: DiagramControlsProps) {
-  const { zoomLevel, zoomIn, zoomOut, toggleFullscreen } = useDiagramStore();
+  const { zoomLevel, zoomIn, zoomOut, isFullscreen } = useDiagramStore();
   
   const toggleRelationships = () => {
     onToggleRelationships(!relationshipsVisible);
@@ -49,10 +51,14 @@ export function DiagramControls({
         <Button 
           size="icon" 
           variant="ghost"
-          onClick={toggleFullscreen}
-          title="Toggle Fullscreen"
+          onClick={onToggleFullscreen}
+          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
         >
-          <Expand className="h-4 w-4" />
+          {isFullscreen ? (
+            <Minimize className="h-4 w-4" />
+          ) : (
+            <Expand className="h-4 w-4" />
+          )}
         </Button>
       </div>
     </div>
