@@ -2,21 +2,16 @@
 
 import { useEffect, useState, useRef } from "react";
 import { DynamicEditor } from "@/components/editor/DynamicEditor";
-import { EntityCard, type EntityField } from "@/app/app/diagram/EntityCard";
+import { EntityCard } from "@/app/app/diagram/EntityCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import { generateCairoCode } from "@/utils/generateCairoCode";
-import { generateEntities } from "@/utils/generateEntities";
 import { ActionButtons } from "./action-buttons";
 import { DiagramControls } from "./diagram-controls";
-import { modelStateService } from "@/services/ModelStateService";
 import { ModelRelationships } from "./ModelRelationships";
 import { useModelStateContext } from "@/hooks/useModelState";
-import {
-  ModelRelationship,
-  detectModelRelationships,
-} from "@/utils/detectModelRelationships";
-import { Button } from "@/components/ui/button";
+import { useDiagramStore } from "@/hooks/useDiagramStore";
+import { useFullscreen } from "@/hooks/useFullscreen";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useWheelZoom } from "@/hooks/useWheelZoom";
 
 export function CodeDiagramSection() {
   const {
@@ -26,7 +21,6 @@ export function CodeDiagramSection() {
     entities,
     relationships,
     isEditing,
-    setIsEditing,
     toggleEditMode,
     restoreInitialModel,
     copyToClipboard,
@@ -35,13 +29,18 @@ export function CodeDiagramSection() {
     activeSections,
     setActiveSection,
   } = useModelStateContext();
+  const { zoomLevel, resetZoom, isFullscreen } = useDiagramStore();
+  const { toggleFullscreen } = useFullscreen();
   const [relationshipsVisible, setRelationshipsVisible] = useState(true);
-  const { toast } = useToast();
   const [entityPositions, setEntityPositions] = useState<
     Record<string, { x: number; y: number }>
   >({});
   const editorRef = useRef<any | null>(null);
   const diagramContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Initialize keyboard shortcuts and wheel zoom
+  useKeyboardShortcuts();
+  useWheelZoom(diagramContainerRef);
 
   // --- Drag state for mouse-based dragging ---
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -68,6 +67,12 @@ export function CodeDiagramSection() {
 
   const resetToGenerated = restoreInitialModel;
 
+  const handleToggleFullscreen = async () => {
+    if (diagramContainerRef.current) {
+      await toggleFullscreen(diagramContainerRef.current);
+    }
+  };
+
   // --- Mouse-based dragging handlers ---
   const handleCardMouseDown = (
     event: React.MouseEvent<HTMLDivElement>,
@@ -76,9 +81,11 @@ export function CodeDiagramSection() {
     event.preventDefault();
     if (!diagramContainerRef.current) return;
     const cardRect = event.currentTarget.getBoundingClientRect();
-    const diagramRect = diagramContainerRef.current.getBoundingClientRect();
-    const offsetX = event.clientX - cardRect.left;
-    const offsetY = event.clientY - cardRect.top;
+    const scale = zoomLevel / 100;
+    
+    // Adjust offsets for zoom level
+    const offsetX = (event.clientX - cardRect.left) / scale;
+    const offsetY = (event.clientY - cardRect.top) / scale;
 
     setDraggingId(modelId);
     setDragOffset({ x: offsetX, y: offsetY });
@@ -87,11 +94,17 @@ export function CodeDiagramSection() {
   const handleMouseMove = (event: MouseEvent) => {
     if (!draggingId || !diagramContainerRef.current) return;
     const diagramRect = diagramContainerRef.current.getBoundingClientRect();
-    let newX = event.clientX - diagramRect.left - dragOffset.x;
-    let newY = event.clientY - diagramRect.top - dragOffset.y;
+    const scale = zoomLevel / 100;
+    
+    // Adjust mouse coordinates for zoom level
+    let newX = (event.clientX - diagramRect.left - dragOffset.x) / scale;
+    let newY = (event.clientY - diagramRect.top - dragOffset.y) / scale;
 
-    newX = Math.max(0, Math.min(newX, diagramRect.width - 220));
-    newY = Math.max(0, Math.min(newY, diagramRect.height - 80));
+    // Clamp to container bounds (accounting for zoom)
+    const containerWidth = diagramRect.width / scale;
+    const containerHeight = diagramRect.height / scale;
+    newX = Math.max(0, Math.min(newX, containerWidth - 220));
+    newY = Math.max(0, Math.min(newY, containerHeight - 80));
 
     setEntityPositions((prev) => ({
       ...prev,
@@ -293,16 +306,33 @@ export function CodeDiagramSection() {
         ) : (
           <div
             ref={diagramContainerRef}
-            className="bg-neutral p-10 overflow-auto w-full relative"
+            data-diagram-container
+            className={`bg-neutral p-10 overflow-auto w-full relative ${
+              isFullscreen 
+                ? 'fixed inset-0 z-[9999] bg-black' 
+                : ''
+            }`}
             style={{
-              height: diagramHeight,
-              minHeight: 300,
+              height: isFullscreen ? '100vh' : diagramHeight,
+              minHeight: isFullscreen ? '100vh' : 300,
               transition: "height 0.1s",
             }}
           >
+            <div
+              className="relative w-full h-full"
+              style={{
+                transform: `scale(${zoomLevel / 100})`,
+                transformOrigin: 'top left',
+                transition: 'transform 0.2s ease-in-out',
+                minWidth: '100%',
+                minHeight: '100%',
+              }}
+              onDoubleClick={resetZoom}
+              title="Double-click to reset zoom to 100%"
+            >
             {entities.map(({ title, fields, modelId }) => {
-              const position = entityPositions[modelId];
-              if (position) {
+              const position = modelId ? entityPositions[modelId] : undefined;
+              if (position && modelId) {
                 return (
                   <EntityCard
                     key={modelId}
@@ -319,6 +349,7 @@ export function CodeDiagramSection() {
                       pointerEvents:
                         draggingId && draggingId !== modelId ? "none" : "auto",
                     }}
+                    onMouseDown={(e) => handleCardMouseDown(e, modelId)}
                   />
                 );
               }
@@ -330,38 +361,61 @@ export function CodeDiagramSection() {
               diagramContainerElement={diagramContainerRef.current}
               relationshipsVisible={relationshipsVisible}
             />
-
-            <div
-              onMouseDown={handleResizeMouseDown}
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 12,
-                cursor: "ns-resize",
-                zIndex: 50,
-                background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.10))",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                userSelect: "none",
-              }}
-              aria-label="Resize diagram vertically"
-              tabIndex={0}
-              role="separator"
-            >
-              <div
-                style={{
-                  width: 40,
-                  height: 4,
-                  borderRadius: 2,
-                  background: "#bbb",
-                  opacity: 0.7,
-                }}
-              />
             </div>
+
+            {/* Fullscreen Controls */}
+            {isFullscreen && (
+              <>
+                {/* Fullscreen Indicator */}
+                <div className="absolute top-4 left-4 z-[10000] bg-black/80 text-white px-3 py-1 rounded-md text-sm">
+                  Fullscreen Mode - Press ESC to exit
+                </div>
+                
+                {/* Floating Controls */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] bg-black/90 rounded-lg p-1 backdrop-blur-sm border border-white/20">
+                  <DiagramControls
+                    relationshipsVisible={relationshipsVisible}
+                    onToggleRelationships={setRelationshipsVisible}
+                    onToggleFullscreen={handleToggleFullscreen}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Resize handle - only show when not in fullscreen */}
+            {!isFullscreen && (
+              <div
+                onMouseDown={handleResizeMouseDown}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 12,
+                  cursor: "ns-resize",
+                  zIndex: 50,
+                  background:
+                    "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.10))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  userSelect: "none",
+                }}
+                aria-label="Resize diagram vertically"
+                tabIndex={0}
+                role="separator"
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 4,
+                    borderRadius: 2,
+                    background: "#bbb",
+                    opacity: 0.7,
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -370,6 +424,7 @@ export function CodeDiagramSection() {
         <DiagramControls
           relationshipsVisible={relationshipsVisible}
           onToggleRelationships={setRelationshipsVisible}
+          onToggleFullscreen={handleToggleFullscreen}
         />
       )}
     </section>
