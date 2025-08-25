@@ -1,6 +1,6 @@
 // Starknet imports
-use starknet::ContractAddress;
 use core::num::traits::zero::Zero;
+use starknet::ContractAddress;
 
 // Constants
 const SECONDS_PER_DAY: u64 = 86400;
@@ -23,17 +23,35 @@ pub struct Project {
     pub is_deleted: bool,
 }
 
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct ProjectCreated {
+    #[key]
+    pub project_id: u64,
+    pub owner: ContractAddress,
+    pub name: felt252,
+    pub timestamp: u64,
+}
+
 // Trait Implementations
 #[generate_trait]
 pub impl ProjectImpl of ProjectTrait {
     // Creates a new project instance
     fn new(
+        ref self: Project,
         id: u32,
         owner: ContractAddress,
         created_at: u64,
         name: felt252,
         description: felt252,
     ) -> Project {
+        let mut world = self.world(@"dojo_starter");
+
+        world
+            .emit_event(
+                @ProjectCreated { id: project_id, owner, name, timestamp: get_block_timestamp() },
+            );
+
         Project {
             id,
             owner,
@@ -99,12 +117,10 @@ pub impl ProjectImpl of ProjectTrait {
 
     // Reactivates the project
     fn exists(self: @Project) -> bool {
-        (
-            self.is_non_zero() &&
-            self.id.is_non_zero() &&
-            self.created_at.is_non_zero() &&
-            *self.is_deleted == false
-        )
+        (self.is_non_zero()
+            && self.id.is_non_zero()
+            && self.created_at.is_non_zero()
+            && *self.is_deleted == false)
     }
 
     // Calculates the number of days since project creation
@@ -132,7 +148,9 @@ pub impl ProjectImpl of ProjectTrait {
     }
 
     // Checks if project is considered mature (created more than X days ago)
-    fn is_mature_project(self: @Project, current_timestamp: u64, maturity_threshold_days: u64) -> bool {
+    fn is_mature_project(
+        self: @Project, current_timestamp: u64, maturity_threshold_days: u64,
+    ) -> bool {
         let days_since_creation = self.get_days_since_creation(current_timestamp);
         days_since_creation >= maturity_threshold_days
     }
@@ -200,8 +218,10 @@ pub impl ZeroableProjectTrait of Zero<Project> {
 // Unit Tests
 #[cfg(test)]
 mod tests {
-    use super::{Project, ZeroableProjectTrait, ProjectImpl, ProjectTrait, ProjectAssert, AssertTrait};
     use starknet::{ContractAddress, contract_address_const};
+    use super::{
+        AssertTrait, Project, ProjectAssert, ProjectImpl, ProjectTrait, ZeroableProjectTrait,
+    };
 
     // Test helper function to create a mock address
     fn mock_address() -> ContractAddress {
@@ -216,13 +236,9 @@ mod tests {
         let creation_timestamp: u64 = 1640995200; // Example timestamp
         let project_name: felt252 = 'TestProject';
         let project_desc: felt252 = 'Test description';
-        
+
         let project = ProjectTrait::new(
-            project_id,
-            owner_address,
-            creation_timestamp,
-            project_name,
-            project_desc,
+            project_id, owner_address, creation_timestamp, project_name, project_desc,
         );
 
         assert_eq!(project.id, project_id, "Project ID should match");
@@ -242,9 +258,9 @@ mod tests {
 
         assert_eq!(project.id, 0, "Zero project ID should be 0");
         assert_eq!(
-            project.owner, 
-            starknet::contract_address_const::<0x0>(), 
-            "Zero project owner should be zero address"
+            project.owner,
+            starknet::contract_address_const::<0x0>(),
+            "Zero project owner should be zero address",
         );
         assert_eq!(project.models_count, 0, "Zero project models count should be 0");
         assert_eq!(project.systems_count, 0, "Zero project systems count should be 0");
@@ -258,7 +274,9 @@ mod tests {
     #[available_gas(1000000)]
     fn test_project_is_zero_detection() {
         let zero_project = ZeroableProjectTrait::zero();
-        let non_zero_project = ProjectTrait::new(1, mock_address(), 1640995200, 'Test', 'Description');
+        let non_zero_project = ProjectTrait::new(
+            1, mock_address(), 1640995200, 'Test', 'Description',
+        );
 
         assert_eq!(zero_project.is_zero(), true, "Zero project should be detected as zero");
         assert_eq!(zero_project.is_non_zero(), false, "Zero project should not be non-zero");
@@ -274,14 +292,14 @@ mod tests {
         // Test adding models
         project.add_model();
         assert_eq!(project.models_count, 1, "Models count should be 1");
-        
+
         project.add_model();
         assert_eq!(project.models_count, 2, "Models count should be 2");
 
         // Test adding systems
         project.add_system();
         assert_eq!(project.systems_count, 1, "Systems count should be 1");
-        
+
         project.add_system();
         project.add_system();
         assert_eq!(project.systems_count, 3, "Systems count should be 3");
@@ -294,7 +312,7 @@ mod tests {
     #[available_gas(1000000)]
     fn test_project_remove_components() {
         let mut project = ProjectTrait::new(1, mock_address(), 1640995200, 'Test', 'Description');
-        
+
         // Add some components first
         project.add_model();
         project.add_model();
@@ -324,8 +342,10 @@ mod tests {
     #[test]
     #[available_gas(1000000)]
     fn test_project_update_metadata() {
-        let mut project = ProjectTrait::new(1, mock_address(), 1640995200, 'OldName', 'OldDescription');
-        
+        let mut project = ProjectTrait::new(
+            1, mock_address(), 1640995200, 'OldName', 'OldDescription',
+        );
+
         let new_name: felt252 = 'NewProjectName';
         let new_description: felt252 = 'NewDescription';
 
@@ -373,9 +393,11 @@ mod tests {
     #[available_gas(1000000)]
     fn test_project_get_days_since_creation() {
         let creation_timestamp: u64 = 1640995200; // Jan 1, 2022
-        let current_timestamp: u64 = 1643673600;  // Feb 1, 2022 (31 days later)
-        
-        let project = ProjectTrait::new(1, mock_address(), creation_timestamp, 'Test', 'Description');
+        let current_timestamp: u64 = 1643673600; // Feb 1, 2022 (31 days later)
+
+        let project = ProjectTrait::new(
+            1, mock_address(), creation_timestamp, 'Test', 'Description',
+        );
 
         let days_since_creation = project.get_days_since_creation(current_timestamp);
         assert_eq!(days_since_creation, 31, "Should be 31 days");
@@ -393,22 +415,14 @@ mod tests {
 
         // Test empty project check
         assert_eq!(project.is_empty(), true, "Should be empty initially");
-        
+
         project.add_model();
         assert_eq!(project.is_empty(), false, "Should not be empty");
 
         // Test maturity check
         let current_timestamp = 1640995200 + (86400 * 10); // 10 days later
-        assert_eq!(
-            project.is_mature_project(current_timestamp, 5), 
-            true, 
-            "Should be mature"
-        );
-        assert_eq!(
-            project.is_mature_project(current_timestamp, 15), 
-            false, 
-            "Should not be mature"
-        );
+        assert_eq!(project.is_mature_project(current_timestamp, 5), true, "Should be mature");
+        assert_eq!(project.is_mature_project(current_timestamp, 15), false, "Should not be mature");
     }
 
     #[test]
@@ -434,27 +448,23 @@ mod tests {
     fn test_project_complex_scenario() {
         let owner_address = mock_address();
         let creation_timestamp: u64 = 1640995200; // Jan 1, 2022
-        let current_timestamp: u64 = 1643673600;  // Feb 1, 2022 (31 days later)
-        
+        let current_timestamp: u64 = 1643673600; // Feb 1, 2022 (31 days later)
+
         // Create project
         let mut project = ProjectTrait::new(
-            42,
-            owner_address,
-            creation_timestamp,
-            'DemoProject',
-            'DemoDescription',
+            42, owner_address, creation_timestamp, 'DemoProject', 'DemoDescription',
         );
-        
+
         // Simulate development activity
-        project.add_model();        // Add User model
-        project.add_model();        // Add Project model
-        project.add_system();       // Add CreateUser system
-        project.add_system();       // Add CreateProject system
-        project.add_system();       // Add UpdateProject system
-        
+        project.add_model(); // Add User model
+        project.add_model(); // Add Project model
+        project.add_system(); // Add CreateUser system
+        project.add_system(); // Add CreateProject system
+        project.add_system(); // Add UpdateProject system
+
         // Update project metadata
         project.update_metadata('DemoProjectV2', 'UpdatedDescription');
-        
+
         // Verify final state
         assert_eq!(project.id, 42, "ID should remain unchanged");
         assert_eq!(project.owner, owner_address, "Owner should remain unchanged");
@@ -465,21 +475,17 @@ mod tests {
         assert_eq!(project.description, 'UpdatedDescription', "Description updated");
         assert_eq!(project.is_active, true, "Should remain active");
         assert_eq!(project.is_empty(), false, "Should not be empty");
-        
+
         // Test time-based calculations
         let days_since_creation = project.get_days_since_creation(current_timestamp);
         assert_eq!(days_since_creation, 31, "Should be 31 days");
-        
+
         // Test maturity
-        assert_eq!(
-            project.is_mature_project(current_timestamp, 30), 
-            true, 
-            "Should be mature"
-        );
-        
+        assert_eq!(project.is_mature_project(current_timestamp, 30), true, "Should be mature");
+
         // Test ownership
         assert_eq!(project.is_owned_by(owner_address), true, "Should be owned by creator");
-        
+
         // Test deactivation
         project.deactivate();
         assert_eq!(project.is_active, false, "Should be deactivated");
@@ -490,10 +496,12 @@ mod tests {
     #[available_gas(1000000)]
     fn test_project_invalid_timestamp_validation() {
         let creation_timestamp: u64 = 1643673600; // Feb 1, 2022
-        let invalid_timestamp: u64 = 1640995200;  // Jan 1, 2022 (earlier than creation)
-        
-        let project = ProjectTrait::new(1, mock_address(), creation_timestamp, 'Test', 'Description');
-        
+        let invalid_timestamp: u64 = 1640995200; // Jan 1, 2022 (earlier than creation)
+
+        let project = ProjectTrait::new(
+            1, mock_address(), creation_timestamp, 'Test', 'Description',
+        );
+
         // This should panic due to invalid timestamp
         project.get_days_since_creation(invalid_timestamp);
     }
