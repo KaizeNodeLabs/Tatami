@@ -2,6 +2,17 @@
 use starknet::ContractAddress;
 use core::num::traits::zero::Zero;
 
+
+// Event definition for user creation
+#[derive(Copy, Drop, Serde)]
+#[dojo::event]
+pub struct UserCreated {
+    #[key]
+    pub user_id: ContractAddress,
+    pub address: ContractAddress,
+    pub timestamp: u64,
+}
+
 // Model
 #[derive(Copy, Drop, Serde, IntrospectPacked, Debug)]
 #[dojo::model]
