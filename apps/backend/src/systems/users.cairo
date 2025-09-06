@@ -3,7 +3,7 @@ use starknet::ContractAddress;
 use dojo::world::IWorldDispatcher;
 use dojo::world::WorldDispatcherTrait;
 use dojo::model::ModelTrait;
-use crate::models::user::{User, UserTrait};
+use crate::models::user::{User, UserTrait, UserCreated};
 
 #[dojo::system]
 pub struct Users;
@@ -19,6 +19,13 @@ impl Users {
     ) {
         let user = User::new(address, creation_timestamp, 0, creation_timestamp, true);
         world.set::<User>(user);
+        
+        // Emit UserCreated event
+        world.emit_event(@UserCreated {
+            user_id: address,
+            address: address,
+            timestamp: creation_timestamp,
+        });
     }
 
     #[dojo::action]
